@@ -51,7 +51,7 @@
                         <img src="https://lh3.googleusercontent.com/d/1WNcGjsZ9_Fp54xzOl01EYRqM6-wY5Zh7" alt="Logo" class="w-full h-full object-contain" />
                     </div>
                     <div>
-                        <span class="text-xl font-bold text-slate-900 block leading-tight tracking-tight uppercase">Reporting Crew List</span>
+                        <span class="text-xl font-bold text-slate-900 block leading-tight tracking-tight uppercase">CrewReport</span>
                         <span class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Flight Ops Division</span>
                     </div>
                 </div>
@@ -101,7 +101,7 @@
                 <section class="glass-card rounded-3xl p-8 shadow-sm">
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <div><label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Route</label><input type="text" name="route" required placeholder="WIHH-WILL" class="w-full px-4 py-3 rounded-xl border border-slate-200 font-bold outline-none focus:border-blue-500 transition-all"></div>
-                        <div><label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Date</label><input type="date" id="flightDateInput" name="date" required class="w-full px-4 py-3 rounded-xl border border-slate-200 font-bold"></div>
+                        <div><label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Date</label><input type="date" id="flightDateInput" name="date" required class="w-full px-4 py-3 rounded-xl border border-slate-200 font-bold"><p id="formattedDateLabel" class="text-[10px] text-blue-600 mt-2 font-black italic uppercase"></p></div>
                         <div><label class="block text-[10px] font-black text-slate-500 uppercase mb-1">ETD (UTC)</label><input type="time" name="etd" required class="w-full px-4 py-3 rounded-xl border border-slate-200 font-bold"></div>
                         <div class="grid grid-cols-2 gap-2">
                             <div><label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Reg</label><select id="acReg" name="ac_reg" onchange="updateAcType()" required class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white font-bold outline-none"><option value="">Select</option><option value="PK-TWY">PK-TWY</option><option value="PK-TWX">PK-TWX</option><option value="PK-TWW">PK-TWW</option><option value="PK-TWV">PK-TWV</option><option value="PK-TWZ">PK-TWZ</option></select></div>
@@ -151,7 +151,7 @@
 
     <script>
         // -- CONFIGURATION --
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwsJ4dYRA7BLaP5F_RHVPkl8aJliSD8J_2n9qCpTZ6HsKrdM3PUIP3xn3_caHu_GdzbSQ/exec"; 
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx-SvgSpJ47H_vXw81bJ_yD__PRpiyqy5W22-ZGcSXlchi3vCK15qUZ9wvKOqGLk58C9A/exec"; 
         
         // -- STATE --
         const acMap = { 'PK-TWY':'GIV', 'PK-TWX':'B300', 'PK-TWW':'C200', 'PK-TWV':'B412', 'PK-TWZ':'AW109' };
@@ -168,6 +168,25 @@
             return `${d.getDate()} ${m[d.getMonth()]} ${d.getFullYear()}`; 
         };
 
+        const formatDateForInput = (s) => {
+            if(!s) return '';
+            const d = new Date(s);
+            if(isNaN(d.getTime())) return s;
+            return d.toISOString().split('T')[0];
+        };
+
+        const formatTimeDisplay = (s) => {
+            if(!s) return '';
+            if(typeof s === 'string' && s.includes('T')) {
+                try {
+                    const timePart = s.split('T')[1].split('.')[0];
+                    const segments = timePart.split(':');
+                    return `${segments[0]}:${segments[1]}`;
+                } catch(e) { return s; }
+            }
+            return s;
+        };
+
         const tick = () => { 
             const now = new Date(); 
             const clockEl = document.getElementById('nav-clock');
@@ -177,27 +196,23 @@
         };
         setInterval(tick, 1000); tick();
 
-        // -- SYNC LOGIC (Simpan & Tarik Data) --
+        // -- SYNC LOGIC --
         async function syncData(silent = false) {
             if (isSyncing || !SCRIPT_URL || SCRIPT_URL === "" || SCRIPT_URL.includes("URL_GOOGLE")) return;
             isSyncing = true;
             if (!silent) document.getElementById('sync-loader').classList.remove('hidden');
-            
             try {
                 const response = await fetch(SCRIPT_URL);
                 const data = await response.json();
-                
-                // Urutkan data berdasarkan tanggal terbaru
                 reports = (data.reports || []).sort((a,b) => new Date(b.date) - new Date(a.date));
                 crewMaster = data.crews || {};
-                
                 renderDashboard();
                 syncPrepareBy();
                 if(!document.getElementById('view-crew-mgmt').classList.contains('hidden')) renderCrewMgmtList();
                 if (!silent) showToast("DATABASE SYNCED");
             } catch (error) {
                 console.error("Sync error:", error);
-                if (!silent) showToast("DATABASE SYNC FAILED", "error");
+                if (!silent) showToast("SYNC FAILED", "error");
             } finally {
                 isSyncing = false;
                 document.getElementById('sync-loader').classList.add('hidden');
@@ -267,9 +282,7 @@
             let rawInput = document.getElementById('crew-sign-input').value.trim();
             let finalUrl = rawInput;
             const srcMatch = rawInput.match(/src=["']([^"']+)["']/);
-            if (srcMatch && srcMatch[1]) {
-                finalUrl = srcMatch[1];
-            }
+            if (srcMatch && srcMatch[1]) finalUrl = srcMatch[1];
             const old = document.getElementById('edit-crew-id').value;
             if (old && old !== n) delete crewMaster[old];
             crewMaster[n] = finalUrl;
@@ -320,7 +333,7 @@
                 <td class="px-4 py-4"><input list="crew-names" name="name_${rowIdx}" value="${data?.name || ''}" required oninput="syncPrepareBy()" class="crew-name-input w-full px-4 py-2 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-500"></td>
                 <td class="px-4 py-4"><select name="rank_${rowIdx}" class="w-full px-2 py-2 border border-slate-200 rounded-xl text-xs font-bold bg-white"><option value="CAPT" ${data?.rank==='CAPT'?'selected':''}>CAPT</option><option value="FO" ${data?.rank==='FO'?'selected':''}>FO</option></select></td>
                 <td class="px-4 py-4"><div class="flex flex-col gap-1">${['LICENSE','PASSPORT','ID CARD'].map(d => `<button type="button" onclick="this.classList.toggle('btn-toggle-active')" class="doc-btn px-2 py-1 border border-slate-100 rounded text-[7px] font-black uppercase tracking-tighter ${docs.includes(d)?'btn-toggle-active':''}">${d}</button>`).join('')}</div></td>
-                <td class="px-4 py-4"><div class="grid grid-cols-2 gap-1 mb-1"><div><p class="text-[6px] text-slate-400 uppercase font-black">Sign In</p><input type="time" name="on_${rowIdx}" value="${data?.on||''}" onchange="calcT(${rowIdx})" class="text-[10px] border border-slate-200 rounded p-1 w-full font-bold"></div><div><p class="text-[6px] text-slate-400 uppercase font-black">Sign Out</p><input type="time" name="off_${rowIdx}" value="${data?.off||''}" onchange="calcT(${rowIdx})" class="text-[10px] border border-slate-200 rounded p-1 w-full font-bold"></div></div><input type="text" id="total_${rowIdx}" name="total_${rowIdx}" value="${data?.total||''}" readonly placeholder="00:00" class="text-[9px] font-black text-blue-700 bg-blue-50 w-full text-center outline-none p-1 rounded-lg"></td>
+                <td class="px-4 py-4"><div class="grid grid-cols-2 gap-1 mb-1"><div><p class="text-[6px] text-slate-400 uppercase font-black">Sign In</p><input type="time" name="on_${rowIdx}" value="${formatTimeDisplay(data?.on)||''}" onchange="calcT(${rowIdx})" class="text-[10px] border border-slate-200 rounded p-1 w-full font-bold"></div><div><p class="text-[6px] text-slate-400 uppercase font-black">Sign Out</p><input type="time" name="off_${rowIdx}" value="${formatTimeDisplay(data?.off)||''}" onchange="calcT(${rowIdx})" class="text-[10px] border border-slate-200 rounded p-1 w-full font-bold"></div></div><input type="text" id="total_${rowIdx}" name="total_${rowIdx}" value="${data?.total||''}" readonly placeholder="00:00" class="text-[9px] font-black text-blue-700 bg-blue-50 w-full text-center outline-none p-1 rounded-lg"></td>
                 <td class="px-4 py-4"><div class="space-y-1"><div class="grid grid-cols-2 gap-1"><div><p class="text-[6px] text-slate-400 uppercase font-black">BP Check</p><input type="text" name="bp_${rowIdx}" value="${data?.bp||''}" placeholder="120/80" class="w-full text-[9px] border border-slate-200 rounded p-1 font-bold text-center"></div><div><p class="text-[6px] text-slate-400 uppercase font-black">ACHL</p><input type="text" name="alc_${rowIdx}" value="${data?.alcohol||'0'}" class="w-full text-[9px] border border-slate-200 rounded p-1 text-center font-bold"></div></div><div class="flex gap-1"><button type="button" onclick="setH(this,'FIT')" class="health-btn flex-1 text-[7px] font-black p-1 border rounded ${h==='FIT'?'btn-fit-active':''}">FIT</button><button type="button" onclick="setH(this,'UNFIT')" class="health-btn flex-1 text-[7px] font-black p-1 border rounded ${h==='UNFIT'?'btn-unfit-active':''}">UNFIT</button></div></div></td>
                 <td class="px-4 py-4"><button type="button" onclick="this.closest('tr').remove(); syncPrepareBy();" class="text-slate-200 hover:text-red-500">✕</button></td>
             `;
@@ -360,20 +373,8 @@
             document.getElementById('stat-total').innerText = reports.length;
             document.getElementById('stat-regs').innerText = [...new Set(reports.map(r => r.ac_reg))].length;
             document.getElementById('stat-latest').innerText = reports.length > 0 ? reports[0].route : '-';
-            
-            if (reports.length === 0) { 
-                c.innerHTML = `<div class="py-20 text-center text-slate-300 font-bold uppercase text-xs tracking-widest">No Database Records Found</div>`; 
-                return; 
-            }
-            
-            const groups = reports.reduce((acc, r) => { 
-                const y = new Date(r.date).getFullYear(); 
-                if (!acc[y]) acc[y] = {}; 
-                if (!acc[y][r.ac_reg]) acc[y][r.ac_reg] = []; 
-                acc[y][r.ac_reg].push(r); 
-                return acc; 
-            }, {});
-            
+            if (reports.length === 0) { c.innerHTML = `<div class="py-20 text-center text-slate-300 font-bold uppercase text-xs tracking-widest">No Database Records Found</div>`; return; }
+            const groups = reports.reduce((acc, r) => { const y = new Date(r.date).getFullYear(); if (!acc[y]) acc[y] = {}; if (!acc[y][r.ac_reg]) acc[y][r.ac_reg] = []; acc[y][r.ac_reg].push(r); return acc; }, {});
             c.innerHTML = '';
             Object.keys(groups).sort((a,b) => b-a).forEach(y => {
                 let regs = '';
@@ -391,7 +392,7 @@
             const r = reports.find(x => x.id === id); if(!r) return;
             const subtitle = document.getElementById('detail-subtitle'); if(subtitle) subtitle.innerText = `${r.ac_reg} • ${r.route}`;
             const body = document.getElementById('detail-body');
-            if(body) body.innerHTML = `<div class="grid grid-cols-2 md:grid-cols-4 gap-4">${[{l:'Date',v:formatIDDate(r.date)},{l:'Aircraft',v:r.ac_reg+' ('+r.ac_type+')'},{l:'Route',v:r.route},{l:'ETD',v:r.etd+' UTC'}].map(x=>`<div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm"><p class="text-[8px] text-slate-400 font-black uppercase mb-1">${x.l}</p><p class="font-bold text-slate-800 text-sm">${x.v}</p></div>`).join('')}</div><div class="space-y-2"><p class="text-[8px] font-black text-slate-400 uppercase tracking-widest">Crew Details</p>${r.crew.map(c=>`<div class="bg-white p-4 rounded-2xl border border-slate-100 flex justify-between items-center shadow-sm"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center font-black text-blue-600 text-[9px]">${c.rank}</div><div><p class="font-black text-sm">${c.name}</p><p class="text-[9px] text-slate-400 uppercase">Time: ${c.on}-${c.off} (${c.total})</p></div></div><div class="text-right"><p class="text-[10px] font-black ${c.health==='FIT'?'text-emerald-500':'text-red-500'} tracking-wider">${c.health}</p><p class="text-[8px] text-slate-400 font-black">BP: ${c.bp||'-'} | Alc: ${c.alcohol||'0'}</p></div></div>`).join('')}</div><div class="bg-amber-50/50 p-6 rounded-2xl border border-amber-100/30 font-medium text-slate-600 text-xs italic">${r.note||'-'}</div>`;
+            if(body) body.innerHTML = `<div class="grid grid-cols-2 md:grid-cols-4 gap-4">${[{l:'Date',v:formatIDDate(r.date)},{l:'Aircraft',v:r.ac_reg+' ('+r.ac_type+')'},{l:'Route',v:r.route},{l:'ETD',v:formatTimeDisplay(r.etd)+' UTC'}].map(x=>`<div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm"><p class="text-[8px] text-slate-400 font-black uppercase mb-1">${x.l}</p><p class="font-bold text-slate-800 text-sm">${x.v}</p></div>`).join('')}</div><div class="space-y-2"><p class="text-[8px] font-black text-slate-400 uppercase tracking-widest">Crew Details</p>${r.crew.map(c=>`<div class="bg-white p-4 rounded-2xl border border-slate-100 flex justify-between items-center shadow-sm"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center font-black text-blue-600 text-[9px]">${c.rank}</div><div><p class="font-black text-sm">${c.name}</p><p class="text-[9px] text-slate-400 uppercase">Time: ${formatTimeDisplay(c.on)}-${formatTimeDisplay(c.off)} (${c.total})</p></div></div><div class="text-right"><p class="text-[10px] font-black ${c.health==='FIT'?'text-emerald-500':'text-red-500'} tracking-wider">${c.health}</p><p class="text-[8px] text-slate-400 font-black">BP: ${c.bp||'-'} | Alc: ${c.alcohol||'0'}</p></div></div>`).join('')}</div><div class="bg-amber-50/50 p-6 rounded-2xl border border-amber-100/30 font-medium text-slate-600 text-xs italic">${r.note||'-'}</div>`;
             document.getElementById('btn-edit').onclick = () => { closeDetail(); startEdit(id); };
             document.getElementById('btn-duplicate').onclick = () => { closeDetail(); startEdit(id, true); };
             document.getElementById('btn-delete').onclick = async () => { if(confirm('Hapus laporan ini dari Database?')) { await apiPost('deleteReport', {id}); syncData(false); closeDetail(); } };
@@ -404,7 +405,17 @@
             const r = reports.find(x => x.id === id); if(!r) return; 
             resetForm(); 
             const f = document.getElementById('reportingForm'); 
-            f.route.value = r.route; f.date.value = r.date; f.etd.value = r.etd; f.ac_reg.value = r.ac_reg; f.note.value = r.note; 
+            f.route.value = r.route; 
+            
+            // Perbaikan Tanggal: Pastikan nilai input sesuai format YYYY-MM-DD
+            const dateVal = formatDateForInput(r.date);
+            f.date.value = dateVal;
+            const label = document.getElementById('formattedDateLabel');
+            if(label) label.innerText = formatIDDate(dateVal);
+            
+            f.etd.value = formatTimeDisplay(r.etd); 
+            f.ac_reg.value = r.ac_reg; 
+            f.note.value = r.note; 
             updateAcType(); 
             const title = document.getElementById('form-title');
             if(!isDup) { const editId = document.getElementById('edit-id'); if(editId) editId.value = r.id; if(title) title.innerText = "EDIT REPORT"; } else { if(title) title.innerText = "DUPLICATE REPORT"; } 
@@ -415,12 +426,12 @@
 
         function generatePDF(id) { 
             const r = reports.find(x => x.id === id); if(!r) return; 
-            document.getElementById('pr-route').innerText = r.route; document.getElementById('pr-date').innerText = formatIDDate(r.date); document.getElementById('pr-etd').innerText = r.etd; document.getElementById('pr-type').innerText = r.ac_type; document.getElementById('pr-reg').innerText = r.ac_reg; document.getElementById('pr-note').innerText = r.note || '-'; document.getElementById('pr-sign-name').innerText = r.prepared_by; 
+            document.getElementById('pr-route').innerText = r.route; document.getElementById('pr-date').innerText = formatIDDate(r.date); document.getElementById('pr-etd').innerText = formatTimeDisplay(r.etd); document.getElementById('pr-type').innerText = r.ac_type; document.getElementById('pr-reg').innerText = r.ac_reg; document.getElementById('pr-note').innerText = r.note || '-'; document.getElementById('pr-sign-name').innerText = r.prepared_by; 
             const pI = document.getElementById('pr-sign-img'); if (crewMaster[r.prepared_by]) { pI.src = crewMaster[r.prepared_by]; pI.style.display = 'block'; } else { pI.style.display = 'none'; } 
             const b = document.getElementById('pr-table-body'); 
             if(b) {
                 b.innerHTML = ''; 
-                r.crew.forEach((c, idx) => { const tr = document.createElement('tr'); tr.innerHTML = `<td align="center">${idx+1}.</td><td>${c.name}</td><td align="center">${c.rank}</td><td align="center">${c.docs.includes('LICENSE')?'YES':''}</td><td align="center">${c.docs.includes('PASSPORT')?'YES':''}</td><td align="center">${c.docs.includes('ID CARD')?'YES':''}</td><td align="center">${c.on}<br>${c.off}</td><td align="center">${c.total}</td><td align="center">${c.bp}</td><td align="center">${c.alcohol}</td><td align="center">${c.health}</td>`; b.appendChild(tr); }); 
+                r.crew.forEach((c, idx) => { const tr = document.createElement('tr'); tr.innerHTML = `<td align="center">${idx+1}.</td><td>${c.name}</td><td align="center">${c.rank}</td><td align="center">${c.docs.includes('LICENSE')?'YES':''}</td><td align="center">${c.docs.includes('PASSPORT')?'YES':''}</td><td align="center">${c.docs.includes('ID CARD')?'YES':''}</td><td align="center">${formatTimeDisplay(c.on)}<br>${formatTimeDisplay(c.off)}</td><td align="center">${c.total}</td><td align="center">${c.bp}</td><td align="center">${c.alcohol}</td><td align="center">${c.health}</td>`; b.appendChild(tr); }); 
                 for(let i=0; i<(7 - r.crew.length); i++) { let tr = document.createElement('tr'); tr.style.height='25px'; tr.innerHTML = `<td align="center">${r.crew.length+i+1}.</td>${'<td></td>'.repeat(10)}`; b.appendChild(tr); }
             }
             window.print(); 
@@ -440,11 +451,9 @@
                 crewArr.push({ name: nI.value, rank: f[`rank_${i}`].value, on: f[`on_${i}`].value, off: f[`off_${i}`].value, total: document.getElementById(`total_${i}`).value, bp: f[`bp_${i}`].value, alcohol: f[`alc_${i}`].value, health: r.querySelector('.btn-fit-active') ? 'FIT' : 'UNFIT', docs: Array.from(r.querySelectorAll('.doc-btn.btn-toggle-active')).map(b => b.innerText) });
             }
             const obj = { id, route: f.route.value, date: f.date.value, etd: f.etd.value, ac_reg: f.ac_reg.value, ac_type: document.getElementById('acType').value, note: f.note.value, prepared_by: f.prepared_by.value, crew: crewArr };
-            
             showToast("SAVING TO CLOUD...");
             await apiPost('saveReport', { payload: obj });
-            showView('dashboard'); 
-            syncData(true);
+            showView('dashboard'); syncData(true);
         });
 
         window.onload = () => { syncData(); };
