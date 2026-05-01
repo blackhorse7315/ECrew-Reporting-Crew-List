@@ -34,11 +34,11 @@
 </head>
 <body class="min-h-screen pb-10">
 
-    <!-- Sync Indicator -->
+    <!-- Sync Indicator (Latar Belakang) -->
     <div id="sync-loader" class="fixed top-20 right-8 z-[60] hidden">
         <div class="bg-white px-4 py-2 rounded-full shadow-xl border border-blue-100 flex items-center gap-3">
             <svg class="loader-spin h-4 w-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21 12a9 9 0 11-6.219-8.56"></path></svg>
-            <span class="text-[10px] font-black text-slate-600 uppercase tracking-widest">Syncing Data...</span>
+            <span class="text-[10px] font-black text-slate-600 uppercase tracking-widest">Updating Sheets...</span>
         </div>
     </div>
 
@@ -60,7 +60,8 @@
                         <p id="nav-clock" class="text-sm font-mono font-bold text-blue-700">00:00:00 UTC</p>
                         <p id="nav-date" class="text-[10px] text-slate-400 font-medium"></p>
                     </div>
-                    <button onclick="syncData()" class="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all" title="Sync Data Manual">
+                    <!-- Manual Sync -->
+                    <button onclick="syncData()" class="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all" title="Refresh Data">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                     </button>
                     <button onclick="showView('crew-mgmt')" class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all" title="Kelola Kru">
@@ -130,7 +131,7 @@
     <div id="modal-detail" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onclick="closeDetail()"></div>
         <div class="glass-card w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-[2rem] shadow-2xl relative flex flex-col animate-in zoom-in-95 duration-300">
-            <div class="p-6 border-b flex justify-between items-center"><div class="flex items-center gap-3"><div class="bg-blue-600 w-1 h-8 rounded-full"></div><div><h2 class="text-lg font-black tracking-tight leading-none">REPORT OVERVIEW</h2><p id="detail-subtitle" class="text-[9px] text-slate-400 font-black uppercase tracking-[0.2em] mt-1"></p></div></div><button onclick="closeDetail()" class="text-slate-300 hover:text-slate-900 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M6 18L18 6M6 6l12 12" /></svg></button></div>
+            <div class="p-6 border-b flex justify-between items-center"><div class="flex items-center gap-3"><div class="bg-blue-600 w-1 h-8 rounded-full"></div><div><h2 class="text-lg font-black tracking-tight leading-none uppercase">Report Overview</h2><p id="detail-subtitle" class="text-[9px] text-slate-400 font-black uppercase tracking-[0.2em] mt-1"></p></div></div><button onclick="closeDetail()" class="text-slate-300 hover:text-slate-900 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M6 18L18 6M6 6l12 12" /></svg></button></div>
             <div id="detail-body" class="p-6 overflow-y-auto space-y-6 bg-slate-50/30"></div>
             <div class="p-6 border-t flex gap-2"><button id="btn-edit" class="bg-blue-600 text-white px-6 py-2.5 rounded-xl font-black text-[10px] active:scale-95">EDIT</button><button id="btn-duplicate" class="bg-indigo-50 text-indigo-700 px-6 py-2.5 rounded-xl font-black text-[10px] active:scale-95">DUPLICATE</button><button id="btn-print" class="bg-emerald-600 text-white px-6 py-2.5 rounded-xl font-black text-[10px] active:scale-95">CETAK PDF</button><button id="btn-delete" class="ml-auto text-red-500 font-black text-[10px] px-4 active:scale-95 text-xs">DELETE</button></div>
         </div>
@@ -150,7 +151,7 @@
 
     <script>
         // -- CONFIGURATION --
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzQ97awR8_PaHPjv5zsPMF2xwtrWlwBjJad6FyHQ-54UfcgIXjnUoP233lXLxuco57azQ/exec"; 
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwsJ4dYRA7BLaP5F_RHVPkl8aJliSD8J_2n9qCpTZ6HsKrdM3PUIP3xn3_caHu_GdzbSQ/exec"; 
         
         // -- STATE --
         const acMap = { 'PK-TWY':'GIV', 'PK-TWX':'B300', 'PK-TWW':'C200', 'PK-TWV':'B412', 'PK-TWZ':'AW109' };
@@ -176,23 +177,27 @@
         };
         setInterval(tick, 1000); tick();
 
-        // -- SYNC LOGIC --
+        // -- SYNC LOGIC (Simpan & Tarik Data) --
         async function syncData(silent = false) {
             if (isSyncing || !SCRIPT_URL || SCRIPT_URL === "" || SCRIPT_URL.includes("URL_GOOGLE")) return;
             isSyncing = true;
             if (!silent) document.getElementById('sync-loader').classList.remove('hidden');
+            
             try {
                 const response = await fetch(SCRIPT_URL);
                 const data = await response.json();
-                reports = data.reports || [];
+                
+                // Urutkan data berdasarkan tanggal terbaru
+                reports = (data.reports || []).sort((a,b) => new Date(b.date) - new Date(a.date));
                 crewMaster = data.crews || {};
+                
                 renderDashboard();
                 syncPrepareBy();
                 if(!document.getElementById('view-crew-mgmt').classList.contains('hidden')) renderCrewMgmtList();
-                if (!silent) showToast("DATA SYNCED");
+                if (!silent) showToast("DATABASE SYNCED");
             } catch (error) {
                 console.error("Sync error:", error);
-                if (!silent) showToast("SYNC FAILED", "error");
+                if (!silent) showToast("DATABASE SYNC FAILED", "error");
             } finally {
                 isSyncing = false;
                 document.getElementById('sync-loader').classList.add('hidden');
@@ -251,7 +256,6 @@
 
         function editCrew(n, u) {
             document.getElementById('crew-name-input').value = n;
-            // Saat edit, tampilkan format tag img lengkap agar user konsisten
             document.getElementById('crew-sign-input').value = `<img src="${u}" />`;
             document.getElementById('edit-crew-id').value = n;
             document.getElementById('crew-form-title').innerText = "Edit Personnel";
@@ -261,18 +265,14 @@
             e.preventDefault();
             const n = document.getElementById('crew-name-input').value.trim();
             let rawInput = document.getElementById('crew-sign-input').value.trim();
-            
-            // Logika ekstraksi URL dari format <img src="..." />
             let finalUrl = rawInput;
             const srcMatch = rawInput.match(/src=["']([^"']+)["']/);
             if (srcMatch && srcMatch[1]) {
                 finalUrl = srcMatch[1];
             }
-
             const old = document.getElementById('edit-crew-id').value;
             if (old && old !== n) delete crewMaster[old];
             crewMaster[n] = finalUrl;
-            
             await apiPost('syncCrews', { crews: crewMaster });
             resetCrewMgmtForm();
             renderCrewMgmtList();
@@ -294,7 +294,7 @@
             const curr = d.value;
             d.innerHTML = '<option value="">-- SELECT NAME --</option>';
             dl.innerHTML = '';
-            all.forEach(n => { d.add(new Option(n, n)); let o = document.createElement('option'); o.value = n; dl.appendChild(o); });
+            all.sort().forEach(n => { d.add(new Option(n, n)); let o = document.createElement('option'); o.value = n; dl.appendChild(o); });
             d.value = curr;
             updateSignPreview();
         }
@@ -359,18 +359,30 @@
             if(!c) return;
             document.getElementById('stat-total').innerText = reports.length;
             document.getElementById('stat-regs').innerText = [...new Set(reports.map(r => r.ac_reg))].length;
-            document.getElementById('stat-latest').innerText = reports.length > 0 ? reports[reports.length-1].route : '-';
-            if (reports.length === 0) { c.innerHTML = `<div class="py-20 text-center text-slate-300 font-bold uppercase text-xs">No Data Found</div>`; return; }
-            const groups = reports.reduce((acc, r) => { const y = new Date(r.date).getFullYear(); if (!acc[y]) acc[y] = {}; if (!acc[y][r.ac_reg]) acc[y][r.ac_reg] = []; acc[y][r.ac_reg].push(r); return acc; }, {});
+            document.getElementById('stat-latest').innerText = reports.length > 0 ? reports[0].route : '-';
+            
+            if (reports.length === 0) { 
+                c.innerHTML = `<div class="py-20 text-center text-slate-300 font-bold uppercase text-xs tracking-widest">No Database Records Found</div>`; 
+                return; 
+            }
+            
+            const groups = reports.reduce((acc, r) => { 
+                const y = new Date(r.date).getFullYear(); 
+                if (!acc[y]) acc[y] = {}; 
+                if (!acc[y][r.ac_reg]) acc[y][r.ac_reg] = []; 
+                acc[y][r.ac_reg].push(r); 
+                return acc; 
+            }, {});
+            
             c.innerHTML = '';
             Object.keys(groups).sort((a,b) => b-a).forEach(y => {
                 let regs = '';
-                Object.keys(groups[y]).forEach(reg => {
+                Object.keys(groups[y]).sort().forEach(reg => {
                     const list = groups[y][reg];
                     regs += `<details class="group border-t border-slate-100"><summary class="flex justify-between p-5 cursor-pointer hover:bg-slate-50 list-none"><div class="flex items-center gap-4"><span class="bg-blue-600 text-white px-3 py-1 rounded-full text-[9px] font-black">${reg}</span><span class="text-slate-400 text-xs font-black">${acMap[reg]||''}</span></div><span class="text-[10px] font-black text-slate-400 uppercase">${list.length} Logs</span></summary><div class="px-4 pb-4"><div class="rounded-2xl border border-slate-100 bg-white"><table class="w-full text-left text-xs"><thead><tr class="bg-slate-50 text-slate-400 text-[8px] uppercase font-black"><th class="px-5 py-3">DATE</th><th class="px-5 py-3">ROUTE</th><th class="px-5 py-3">PREPARED BY</th></tr></thead><tbody>${list.map(r => `<tr onclick="viewDetail('${r.id}')" class="border-b last:border-0 border-slate-50 hover:bg-blue-50/50 cursor-pointer transition-all"><td class="px-5 py-3 font-bold text-slate-700">${formatIDDate(r.date)}</td><td class="px-5 py-3 font-black text-blue-600">${r.route}</td><td class="px-5 py-3 text-slate-400 italic">${r.prepared_by}</td></tr>`).join('')}</tbody></table></div></div></details>`;
                 });
                 const yDiv = document.createElement('div'); yDiv.className = "glass-card rounded-3xl overflow-hidden mb-6 shadow-sm";
-                yDiv.innerHTML = `<div class="bg-slate-900 p-5 text-white font-black tracking-widest">${y}</div>${regs}`;
+                yDiv.innerHTML = `<div class="bg-slate-900 p-5 text-white font-black tracking-widest text-lg">${y}</div>${regs}`;
                 c.appendChild(yDiv);
             });
         }
@@ -382,7 +394,7 @@
             if(body) body.innerHTML = `<div class="grid grid-cols-2 md:grid-cols-4 gap-4">${[{l:'Date',v:formatIDDate(r.date)},{l:'Aircraft',v:r.ac_reg+' ('+r.ac_type+')'},{l:'Route',v:r.route},{l:'ETD',v:r.etd+' UTC'}].map(x=>`<div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm"><p class="text-[8px] text-slate-400 font-black uppercase mb-1">${x.l}</p><p class="font-bold text-slate-800 text-sm">${x.v}</p></div>`).join('')}</div><div class="space-y-2"><p class="text-[8px] font-black text-slate-400 uppercase tracking-widest">Crew Details</p>${r.crew.map(c=>`<div class="bg-white p-4 rounded-2xl border border-slate-100 flex justify-between items-center shadow-sm"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center font-black text-blue-600 text-[9px]">${c.rank}</div><div><p class="font-black text-sm">${c.name}</p><p class="text-[9px] text-slate-400 uppercase">Time: ${c.on}-${c.off} (${c.total})</p></div></div><div class="text-right"><p class="text-[10px] font-black ${c.health==='FIT'?'text-emerald-500':'text-red-500'} tracking-wider">${c.health}</p><p class="text-[8px] text-slate-400 font-black">BP: ${c.bp||'-'} | Alc: ${c.alcohol||'0'}</p></div></div>`).join('')}</div><div class="bg-amber-50/50 p-6 rounded-2xl border border-amber-100/30 font-medium text-slate-600 text-xs italic">${r.note||'-'}</div>`;
             document.getElementById('btn-edit').onclick = () => { closeDetail(); startEdit(id); };
             document.getElementById('btn-duplicate').onclick = () => { closeDetail(); startEdit(id, true); };
-            document.getElementById('btn-delete').onclick = async () => { if(confirm('Hapus laporan ini?')) { reports = reports.filter(x => x.id !== id); await apiPost('deleteReport', {id}); renderDashboard(); closeDetail(); showToast("REPORT DELETED"); } };
+            document.getElementById('btn-delete').onclick = async () => { if(confirm('Hapus laporan ini dari Database?')) { await apiPost('deleteReport', {id}); syncData(false); closeDetail(); } };
             document.getElementById('btn-print').onclick = () => generatePDF(id);
             const modal = document.getElementById('modal-detail'); if(modal) modal.classList.remove('hidden');
         }
@@ -428,13 +440,14 @@
                 crewArr.push({ name: nI.value, rank: f[`rank_${i}`].value, on: f[`on_${i}`].value, off: f[`off_${i}`].value, total: document.getElementById(`total_${i}`).value, bp: f[`bp_${i}`].value, alcohol: f[`alc_${i}`].value, health: r.querySelector('.btn-fit-active') ? 'FIT' : 'UNFIT', docs: Array.from(r.querySelectorAll('.doc-btn.btn-toggle-active')).map(b => b.innerText) });
             }
             const obj = { id, route: f.route.value, date: f.date.value, etd: f.etd.value, ac_reg: f.ac_reg.value, ac_type: document.getElementById('acType').value, note: f.note.value, prepared_by: f.prepared_by.value, crew: crewArr };
-            const exI = reports.findIndex(x => x.id === id); if(exI > -1) reports[exI] = obj; else reports.push(obj);
-            showToast("SAVING TO SHEETS...");
+            
+            showToast("SAVING TO CLOUD...");
             await apiPost('saveReport', { payload: obj });
-            showView('dashboard'); syncData(true);
+            showView('dashboard'); 
+            syncData(true);
         });
 
-        window.onload = () => { syncData(); const dashboard = document.getElementById('view-dashboard'); if(dashboard && dashboard.classList.contains('hidden') === false) renderDashboard(); };
+        window.onload = () => { syncData(); };
     </script>
     <datalist id="crew-names"></datalist>
 </body>
