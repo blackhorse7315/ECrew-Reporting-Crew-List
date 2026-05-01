@@ -4,701 +4,513 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reporting Crew List - Aviation Management</title>
+    <!-- Ikon Website & Shortcut -->
+    <link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/1WNcGjsZ9_Fp54xzOl01EYRqM6-wY5Zh7">
+    <link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/1WNcGjsZ9_Fp54xzOl01EYRqM6-wY5Zh7">
+    
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f1f5f9;
-        }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(226, 232, 240, 1);
-        }
-        .btn-toggle-active { background-color: #1e40af; color: white; }
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
+        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(226, 232, 240, 1); }
+        .btn-toggle-active { background-color: #1e40af; color: white; border-color: #1e40af; }
         .btn-fit-active { background-color: #10b981; color: white; border-color: #10b981; }
         .btn-unfit-active { background-color: #ef4444; color: white; border-color: #ef4444; }
         
-        /* PRINT STYLES - A4 Landscape Identical to PDF */
         @media print {
             @page { size: A4 landscape; margin: 1cm; }
-            body { background: white !important; -webkit-print-color-adjust: exact; }
-            #view-dashboard, #view-form, nav, #toast, .modal-backdrop, #modal-detail { display: none !important; }
+            body { background: white !important; }
+            #view-dashboard, #view-form, #view-crew-mgmt, nav, #toast, #modal-detail, #sync-loader { display: none !important; }
             #print-area { display: block !important; width: 100%; color: black; font-family: 'Times New Roman', serif; }
             table { width: 100%; border-collapse: collapse; }
             th, td { border: 1px solid black; padding: 4px 6px; font-size: 10pt; }
             .no-border td { border: none !important; }
-            .header-info td { padding: 2px 0; font-size: 11pt; font-weight: bold; }
-            .title-main { font-size: 14pt; font-weight: bold; text-decoration: underline; margin: 10px 0; }
-            .empty-row { height: 25px; }
+            .title-main { font-size: 14pt; font-weight: bold; text-decoration: underline; margin: 10px 0; text-align: center; }
         }
-
         #print-area { display: none; }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .loader-spin { animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="min-h-screen">
+<body class="min-h-screen pb-10">
+
+    <!-- Sync Indicator -->
+    <div id="sync-loader" class="fixed top-20 right-8 z-[60] hidden">
+        <div class="bg-white px-4 py-2 rounded-full shadow-xl border border-blue-100 flex items-center gap-3">
+            <svg class="loader-spin h-4 w-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21 12a9 9 0 11-6.219-8.56"></path></svg>
+            <span class="text-[10px] font-black text-slate-600 uppercase tracking-widest">Syncing Data...</span>
+        </div>
+    </div>
 
     <!-- Navigation -->
     <nav class="bg-white border-b border-slate-200 sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 items-center">
                 <div class="flex items-center gap-3 cursor-pointer" onclick="showView('dashboard')">
-                    <div class="bg-blue-600 p-2 rounded-lg">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                        </svg>
+                    <div class="h-10 w-10 overflow-hidden rounded-lg">
+                        <img src="https://lh3.googleusercontent.com/d/1WNcGjsZ9_Fp54xzOl01EYRqM6-wY5Zh7" alt="Logo" class="w-full h-full object-contain" />
                     </div>
                     <div>
-                        <span class="text-xl font-bold text-slate-900 block leading-tight tracking-tight">CrewReport</span>
+                        <span class="text-xl font-bold text-slate-900 block leading-tight tracking-tight uppercase">CrewReport</span>
                         <span class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Flight Ops Division</span>
                     </div>
                 </div>
-                <div class="flex items-center gap-6">
-                    <div class="hidden md:flex flex-col items-end">
+                <div class="flex items-center gap-2 md:gap-4">
+                    <div class="hidden md:flex flex-col items-end mr-2">
                         <p id="nav-clock" class="text-sm font-mono font-bold text-blue-700">00:00:00 UTC</p>
                         <p id="nav-date" class="text-[10px] text-slate-400 font-medium"></p>
                     </div>
-                    <button onclick="openNewForm()" class="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2 px-5 py-2.5 rounded-full shadow-lg transition-all active:scale-95">
-                        <span class="text-xl font-bold">＋</span>
-                        <span class="font-bold text-sm">BARU</span>
+                    <button onclick="syncData()" class="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all" title="Sync Data Manual">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                     </button>
+                    <button onclick="showView('crew-mgmt')" class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all" title="Kelola Kru">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                    </button>
+                    <button onclick="openNewForm()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full shadow-lg transition-all active:scale-95 font-bold text-sm">NEW</button>
                 </div>
             </div>
         </div>
     </nav>
 
     <main class="max-w-7xl mx-auto px-4 py-8">
-        
-        <!-- DASHBOARD VIEW -->
+        <!-- VIEW: DASHBOARD -->
         <div id="view-dashboard" class="space-y-8 animate-in fade-in duration-500">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="glass-card p-6 rounded-2xl shadow-sm border-l-4 border-l-blue-600 hover:shadow-md transition-shadow">
-                    <p class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Total Laporan</p>
-                    <h3 id="stat-total" class="text-3xl font-black text-slate-800">0</h3>
-                </div>
-                <div class="glass-card p-6 rounded-2xl shadow-sm border-l-4 border-l-emerald-500 hover:shadow-md transition-shadow">
-                    <p class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Registrasi Aktif</p>
-                    <h3 id="stat-regs" class="text-3xl font-black text-slate-800">0</h3>
-                </div>
-                <div class="glass-card p-6 rounded-2xl shadow-sm border-l-4 border-l-indigo-600 hover:shadow-md transition-shadow">
-                    <p class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Update Terakhir</p>
-                    <h3 id="stat-latest" class="text-lg font-bold text-slate-700 italic truncate">-</h3>
-                </div>
+                <div class="glass-card p-6 rounded-2xl border-l-4 border-l-blue-600"><p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Total Reports</p><h3 id="stat-total" class="text-3xl font-black text-slate-800">0</h3></div>
+                <div class="glass-card p-6 rounded-2xl border-l-4 border-l-emerald-500"><p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Active Aircrafts</p><h3 id="stat-regs" class="text-3xl font-black text-slate-800">0</h3></div>
+                <div class="glass-card p-6 rounded-2xl border-l-4 border-l-indigo-600"><p class="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Last Route</p><h3 id="stat-latest" class="text-lg font-bold text-slate-700 truncate">-</h3></div>
             </div>
+            <div id="dashboard-content" class="space-y-4"></div>
+        </div>
 
-            <div class="space-y-4">
-                <div class="flex items-center justify-between">
-                    <h2 class="text-xl font-black text-slate-800 flex items-center gap-2">
-                        <div class="w-2 h-6 bg-blue-600 rounded-full"></div>
-                        DATA EXPLORER
-                    </h2>
-                </div>
-                <div id="dashboard-content" class="space-y-4">
-                    <!-- Dashboard Groups (Year > Reg) injected here -->
-                </div>
+        <!-- VIEW: CREW MANAGEMENT -->
+        <div id="view-crew-mgmt" class="hidden animate-in slide-in-from-right-4">
+            <div class="flex items-center justify-between mb-8"><button onclick="showView('dashboard')" class="text-slate-400 font-bold uppercase text-xs">← Dashboard</button><h2 class="text-2xl font-black uppercase">Crew & Signatures</h2></div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-1"><div class="glass-card rounded-3xl p-6 sticky top-24"><h3 id="crew-form-title" class="text-xs font-black text-blue-600 uppercase mb-6 tracking-tighter">Add Personnel</h3><form id="crewMgmtForm" class="space-y-4"><input type="hidden" id="edit-crew-id"><div><label class="text-[9px] font-black text-slate-400 uppercase">Full Name</label><input type="text" id="crew-name-input" required class="w-full px-4 py-3 rounded-xl border border-slate-200 font-bold text-sm"></div><div><label class="text-[9px] font-black text-slate-400 uppercase">Signature URL</label><input type="url" id="crew-sign-input" required class="w-full px-4 py-3 rounded-xl border border-slate-200 text-xs"></div><button type="submit" class="w-full bg-blue-600 text-white font-black py-3 rounded-xl shadow-lg text-xs tracking-widest">SAVE & SYNC</button></form></div></div>
+                <div class="lg:col-span-2 space-y-3" id="crew-list-container"></div>
             </div>
         </div>
 
-        <!-- FORM VIEW -->
+        <!-- VIEW: REPORT FORM -->
         <div id="view-form" class="hidden animate-in slide-in-from-bottom-4 duration-500 pb-20">
-            <div class="flex items-center justify-between mb-8">
-                <button onclick="showView('dashboard')" class="flex items-center gap-2 text-slate-400 hover:text-slate-600 font-bold transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" /></svg>
-                    KEMBALI
-                </button>
-                <h2 id="form-title" class="text-2xl font-black text-slate-900 tracking-tight">PELAPORAN BARU</h2>
-            </div>
-
+            <div class="flex items-center justify-between mb-8"><button onclick="showView('dashboard')" class="text-slate-400 font-bold text-xs uppercase tracking-tighter">← Back</button><h2 id="form-title" class="text-2xl font-black uppercase tracking-tight">Report Form</h2></div>
             <form id="reportingForm" class="space-y-8">
                 <input type="hidden" id="edit-id" name="id">
-                
-                <!-- Flight Info -->
                 <section class="glass-card rounded-3xl p-8 shadow-sm">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                        <div>
-                            <label class="block text-xs font-black text-slate-500 uppercase mb-2 tracking-widest">Route</label>
-                            <input type="text" name="route" required placeholder="Contoh: RINDAM-RAYA" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-bold">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-black text-slate-500 uppercase mb-2 tracking-widest">Date</label>
-                            <input type="date" id="flightDateInput" name="date" required class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-bold">
-                            <p id="formattedDateLabel" class="text-[10px] text-blue-600 mt-2 font-black italic uppercase"></p>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-black text-slate-500 uppercase mb-2 tracking-widest">ETD (UTC)</label>
-                            <input type="time" name="etd" required class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-bold">
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-black text-slate-500 uppercase mb-2 tracking-widest">Reg</label>
-                                <select id="acReg" name="ac_reg" onchange="updateAcType()" required class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white font-bold outline-none">
-                                    <option value="">Pilih</option>
-                                    <option value="PK-TWY">PK-TWY</option>
-                                    <option value="PK-TWX">PK-TWX</option>
-                                    <option value="PK-TWW">PK-TWW</option>
-                                    <option value="PK-TWV">PK-TWV</option>
-                                    <option value="PK-TWZ">PK-TWZ</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-black text-slate-500 uppercase mb-2 tracking-widest">Type</label>
-                                <input type="text" id="acType" name="ac_type" readonly class="w-full px-4 py-3 rounded-xl border bg-slate-50 font-black text-slate-400 text-center">
-                            </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div><label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Route</label><input type="text" name="route" required placeholder="WIHH-WILL" class="w-full px-4 py-3 rounded-xl border border-slate-200 font-bold outline-none focus:border-blue-500 transition-all"></div>
+                        <div><label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Date</label><input type="date" id="flightDateInput" name="date" required class="w-full px-4 py-3 rounded-xl border border-slate-200 font-bold"></div>
+                        <div><label class="block text-[10px] font-black text-slate-500 uppercase mb-1">ETD (UTC)</label><input type="time" name="etd" required class="w-full px-4 py-3 rounded-xl border border-slate-200 font-bold"></div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div><label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Reg</label><select id="acReg" name="ac_reg" onchange="updateAcType()" required class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white font-bold outline-none"><option value="">Select</option><option value="PK-TWY">PK-TWY</option><option value="PK-TWX">PK-TWX</option><option value="PK-TWW">PK-TWW</option><option value="PK-TWV">PK-TWV</option><option value="PK-TWZ">PK-TWZ</option></select></div>
+                            <div><label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Type</label><input type="text" id="acType" name="ac_type" readonly class="w-full px-4 py-3 rounded-xl border bg-slate-50 font-black text-slate-400 text-center"></div>
                         </div>
                     </div>
                 </section>
-
-                <!-- Crew Details -->
                 <section class="glass-card rounded-3xl p-8 shadow-sm overflow-x-auto">
-                    <div class="flex items-center justify-between mb-8">
-                        <div class="text-slate-800 font-black uppercase tracking-widest text-sm flex items-center gap-3">
-                            <div class="w-1.5 h-4 bg-blue-600 rounded-full"></div>
-                            CREW PERSONNEL LIST
-                        </div>
-                        <button type="button" onclick="addNewCrewRow()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-full text-xs font-black shadow-lg shadow-blue-200 active:scale-95 transition-all">＋ TAMBAH KRU</button>
-                    </div>
-                    <table class="w-full text-left border-collapse min-w-[1100px]">
-                        <thead>
-                            <tr class="bg-slate-50 text-slate-400 text-[10px] uppercase font-black tracking-widest border-b border-slate-100">
-                                <th class="px-4 py-4 w-12 text-center">No</th>
-                                <th class="px-4 py-4">Crew Name</th>
-                                <th class="px-4 py-4 w-32">Rank</th>
-                                <th class="px-4 py-4 w-32">Doc (YES)</th>
-                                <th class="px-4 py-4 w-48 text-center">Time (UTC)</th>
-                                <th class="px-4 py-4 w-48 text-center">Health Check</th>
-                                <th class="px-4 py-4 w-12"></th>
-                            </tr>
-                        </thead>
+                    <div class="flex items-center justify-between mb-8"><div class="text-slate-800 font-black tracking-widest text-sm uppercase">Crew Personnel</div><button type="button" onclick="addNewCrewRow()" class="bg-blue-600 text-white px-5 py-2 rounded-full text-[10px] font-black shadow-lg">＋ ADD CREW</button></div>
+                    <table class="w-full text-left border-collapse min-w-[1000px]">
+                        <thead><tr class="bg-slate-50 text-slate-400 text-[9px] uppercase font-black tracking-widest border-b border-slate-100"><th class="px-4 py-4 w-12 text-center">No</th><th>Crew Name</th><th class="w-24">Rank</th><th class="w-28">Docs</th><th class="w-48 text-center">Time (UTC)</th><th class="w-52 text-center">Health Check</th><th class="w-10"></th></tr></thead>
                         <tbody id="crewTableBody"></tbody>
                     </table>
                 </section>
-
-                <!-- Footer Info -->
                 <section class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div class="md:col-span-2 glass-card rounded-3xl p-8 shadow-sm">
-                        <label class="block text-xs font-black text-slate-500 uppercase mb-4 tracking-widest">Note / Catatan Khusus</label>
-                        <textarea name="note" rows="5" class="w-full px-6 py-4 border border-slate-100 rounded-2xl outline-none focus:ring-4 focus:ring-blue-500/5 transition-all resize-none font-medium italic"></textarea>
-                    </div>
-                    <div class="glass-card rounded-3xl p-8 shadow-sm flex flex-col justify-between">
-                        <div>
-                            <label class="block text-xs font-black text-slate-500 uppercase mb-4 tracking-widest">Prepared By:</label>
-                            <select id="preparedBy" name="prepared_by" required class="w-full px-6 py-4 border border-slate-200 rounded-2xl bg-white font-black text-blue-700 outline-none appearance-none">
-                                <option value="">-- PILIH NAMA --</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="mt-8 w-full bg-slate-900 hover:bg-black text-white font-black py-5 rounded-2xl shadow-xl transition-all hover:translate-y-[-2px] active:translate-y-0 tracking-widest">
-                            SIMPAN LAPORAN
-                        </button>
+                    <div class="md:col-span-2 glass-card rounded-3xl p-8"><label class="block text-[10px] font-black text-slate-500 uppercase mb-2">Note / Catatan</label><textarea name="note" rows="5" placeholder='Fill "NIL" if no Note' class="w-full px-6 py-4 border border-slate-100 rounded-2xl outline-none font-medium italic"></textarea></div>
+                    <div class="glass-card rounded-3xl p-8 flex flex-col justify-between">
+                        <div><label class="block text-[10px] font-black text-slate-500 uppercase mb-2 tracking-widest">Prepared By:</label><select id="preparedBy" name="prepared_by" required onchange="updateSignPreview()" class="w-full px-6 py-4 border border-slate-200 rounded-2xl bg-white font-black text-blue-700 outline-none appearance-none"><option value="">-- SELECT NAME --</option></select><div id="sign-preview-container" class="mt-4 h-20 w-full flex items-center justify-center border border-dashed border-slate-200 rounded-2xl overflow-hidden bg-slate-50 hidden"><img id="sign-preview-img" src="" alt="TTD" class="h-full object-contain" /></div></div>
+                        <button type="submit" class="mt-8 w-full bg-slate-900 text-white font-black py-5 rounded-2xl shadow-xl hover:translate-y-[-2px] transition-all uppercase tracking-widest">SAVE REPORT</button>
                     </div>
                 </section>
             </form>
         </div>
     </main>
 
-    <!-- MODAL: DETAIL & ACTIONS -->
+    <!-- MODAL DETAIL -->
     <div id="modal-detail" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onclick="closeDetail()"></div>
-        <div class="glass-card w-full max-w-5xl max-h-[92vh] overflow-hidden rounded-[2.5rem] shadow-2xl relative flex flex-col animate-in zoom-in-95 duration-300">
-            <div class="p-8 border-b border-slate-100 flex justify-between items-center bg-white/50">
-                <div class="flex items-center gap-4">
-                    <div class="bg-blue-600 w-1.5 h-10 rounded-full"></div>
-                    <div>
-                        <h2 id="detail-title" class="text-2xl font-black text-slate-900 tracking-tight">REPORT OVERVIEW</h2>
-                        <p id="detail-subtitle" class="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em]"></p>
-                    </div>
-                </div>
-                <button onclick="closeDetail()" class="text-slate-300 hover:text-slate-900 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                </button>
-            </div>
-            
-            <div class="p-10 overflow-y-auto space-y-10 bg-slate-50/30">
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
-                        <p class="text-[9px] text-slate-400 font-black uppercase mb-2 tracking-widest">Date</p>
-                        <p id="det-date" class="font-black text-slate-800 text-lg"></p>
-                    </div>
-                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
-                        <p class="text-[9px] text-slate-400 font-black uppercase mb-2 tracking-widest">Aircraft</p>
-                        <p id="det-ac" class="font-black text-blue-600 text-lg"></p>
-                    </div>
-                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
-                        <p class="text-[9px] text-slate-400 font-black uppercase mb-2 tracking-widest">Route</p>
-                        <p id="det-route" class="font-black text-slate-800 text-lg truncate"></p>
-                    </div>
-                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
-                        <p class="text-[9px] text-slate-400 font-black uppercase mb-2 tracking-widest">ETD (UTC)</p>
-                        <p id="det-etd" class="font-black text-slate-800 text-lg"></p>
-                    </div>
-                </div>
-
-                <div id="det-crew-list" class="space-y-4">
-                    <!-- Crew summary injected here -->
-                </div>
-
-                <div class="bg-amber-50/80 p-8 rounded-[2rem] border border-amber-100/50">
-                    <p class="text-[10px] text-amber-600 font-black uppercase mb-3 tracking-widest">Catatan Tambahan</p>
-                    <p id="det-note" class="text-slate-600 text-sm italic leading-relaxed"></p>
-                </div>
-            </div>
-
-            <div class="p-8 bg-white/80 border-t border-slate-100 flex flex-wrap gap-4 justify-between items-center">
-                <div class="flex gap-3">
-                    <button id="btn-edit" class="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-2xl font-black text-xs hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 active:scale-95">
-                        EDIT
-                    </button>
-                    <button id="btn-duplicate" class="flex items-center gap-2 bg-indigo-100 text-indigo-700 px-6 py-3 rounded-2xl font-black text-xs hover:bg-indigo-200 transition-all active:scale-95">
-                        DUPLICATE
-                    </button>
-                    <button id="btn-print" class="flex items-center gap-2 bg-emerald-600 text-white px-6 py-3 rounded-2xl font-black text-xs hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-100 active:scale-95">
-                        CETAK PDF (A4)
-                    </button>
-                </div>
-                <button id="btn-delete" class="flex items-center gap-2 text-red-500 px-6 py-3 rounded-2xl font-black text-xs hover:bg-red-50 transition-all active:scale-95">
-                    HAPUS
-                </button>
-            </div>
+        <div class="glass-card w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-[2rem] shadow-2xl relative flex flex-col animate-in zoom-in-95 duration-300">
+            <div class="p-6 border-b flex justify-between items-center"><div class="flex items-center gap-3"><div class="bg-blue-600 w-1 h-8 rounded-full"></div><div><h2 class="text-lg font-black tracking-tight leading-none">REPORT OVERVIEW</h2><p id="detail-subtitle" class="text-[9px] text-slate-400 font-black uppercase tracking-[0.2em] mt-1"></p></div></div><button onclick="closeDetail()" class="text-slate-300 hover:text-slate-900 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M6 18L18 6M6 6l12 12" /></svg></button></div>
+            <div id="detail-body" class="p-6 overflow-y-auto space-y-6 bg-slate-50/30"></div>
+            <div class="p-6 border-t flex gap-2"><button id="btn-edit" class="bg-blue-600 text-white px-6 py-2.5 rounded-xl font-black text-[10px] active:scale-95">EDIT</button><button id="btn-duplicate" class="bg-indigo-50 text-indigo-700 px-6 py-2.5 rounded-xl font-black text-[10px] active:scale-95">DUPLICATE</button><button id="btn-print" class="bg-emerald-600 text-white px-6 py-2.5 rounded-xl font-black text-[10px] active:scale-95">CETAK PDF</button><button id="btn-delete" class="ml-auto text-red-500 font-black text-[10px] px-4 active:scale-95 text-xs">DELETE</button></div>
         </div>
     </div>
 
-    <!-- AREA CETAK (HIDDEN ON SCREEN) -->
+    <!-- AREA CETAK -->
     <div id="print-area">
-        <table class="no-border" style="margin-bottom: 20px;">
-            <tr>
-                <td width="50%">
-                    <table class="no-border header-info">
-                        <tr><td>ROUTE</td><td>: <span id="pr-route"></span></td></tr>
-                    </table>
-                </td>
-                <td width="50%" align="right" style="vertical-align: top;">
-                    <table class="no-border header-info">
-                        <tr><td>DATE</td><td>: <span id="pr-date"></span></td></tr>
-                        <tr><td>ETD</td><td>: <span id="pr-etd"></span> UTC</td></tr>
-                        <tr><td>AIRCRAFT TYPE</td><td>: <span id="pr-type"></span></td></tr>
-                    </table>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <table class="no-border header-info">
-                        <tr><td>AIRCRAFT REG</td><td>: <span id="pr-reg"></span></td></tr>
-                    </table>
-                </td>
-                <td></td>
-            </tr>
-        </table>
-
+        <table class="no-border" style="margin-bottom: 20px;"><tr><td width="50%"><table class="no-border header-info"><tr><td>ROUTE</td><td>: <span id="pr-route"></span></td></tr></table></td><td width="50%" align="right"><table class="no-border header-info"><tr><td>DATE</td><td>: <span id="pr-date"></span></td></tr><tr><td>ETD</td><td>: <span id="pr-etd"></span> UTC</td></tr><tr><td>AIRCRAFT TYPE</td><td>: <span id="pr-type"></span></td></tr></table></td></tr><tr><td><table class="no-border header-info"><tr><td>AIRCRAFT REG</td><td>: <span id="pr-reg"></span></td></tr></table></td><td></td></tr></table>
         <div align="center" class="title-main">REPORTING CREW LIST</div>
-
-        <table>
-            <thead>
-                <tr style="background: #f0f0f0;">
-                    <th rowspan="2" width="30">NO</th>
-                    <th rowspan="2">CREW NAME</th>
-                    <th rowspan="2" width="60">RANK</th>
-                    <th colspan="3">PERSONEL DOCUMENT</th>
-                    <th colspan="2">REPORTING TIME (UTC)</th>
-                    <th colspan="3">CHECK</th>
-                </tr>
-                <tr style="background: #f0f0f0;">
-                    <th width="50">LICENSE</th>
-                    <th width="50">PASSPORT</th>
-                    <th width="50">ID CARD</th>
-                    <th width="60">ON<br>OFF</th>
-                    <th width="50">TOTAL</th>
-                    <th width="70">BLOOD PRESS</th>
-                    <th width="40">ACHL</th>
-                    <th width="60">REMARKS</th>
-                </tr>
-            </thead>
-            <tbody id="pr-table-body">
-                <!-- Rows injected here -->
-            </tbody>
-        </table>
-
-        <div style="margin-top: 20px; font-size: 10pt;">
-            <strong>NOTE:</strong><br>
-            <div id="pr-note" style="min-height: 60px; border: 1px solid #ccc; padding: 10px; margin-top: 5px;"></div>
-        </div>
-
-        <div style="margin-top: 30px; display: flex; justify-content: flex-end;">
-            <div style="text-align: center; width: 250px;">
-                <p style="font-size: 9pt; margin-bottom: 50px;">PREPARED BY FLOPS<br>OR PILOT ON DUTY</p>
-                <p id="pr-sign-name" style="font-weight: bold; text-decoration: underline;"></p>
-            </div>
-        </div>
-        
-        <div style="margin-top: 10px; font-size: 8pt; color: #666;">F/TWA-OPS/042-01</div>
+        <table><thead><tr style="background: #f0f0f0;"><th rowspan="2" width="30">NO</th><th rowspan="2">CREW NAME</th><th rowspan="2" width="60">RANK</th><th colspan="3">PERSONEL DOCUMENT</th><th colspan="2">REPORTING TIME (UTC)</th><th colspan="3">CHECK</th></tr><tr style="background: #f0f0f0;"><th>LICENSE</th><th>PASSPORT</th><th>ID CARD</th><th>ON/OFF</th><th>TOTAL</th><th>BP</th><th>ACHL</th><th>REMARKS</th></tr></thead><tbody id="pr-table-body"></tbody></table>
+        <div style="margin-top: 20px; font-size: 10pt;"><strong>NOTE:</strong><br><div id="pr-note" style="min-height: 60px; border: 1px solid #ccc; padding: 10px; margin-top: 5px;"></div></div>
+        <div style="margin-top: 20px; display: flex; justify-content: flex-end;"><div style="text-align: center; width: 250px;"><p style="font-size: 9pt; margin-bottom: 5px;">PREPARED BY FLOPS<br>OR PILOT ON DUTY</p><div style="height: 60px; display: flex; align-items: center; justify-content: center; margin-bottom: 5px;"><img id="pr-sign-img" src="" style="max-height: 100%; max-width: 100%; object-fit: contain;"></div><p id="pr-sign-name" style="font-weight: bold; text-decoration: underline;"></p></div></div>
     </div>
 
     <!-- Message Toasts -->
-    <div id="toast" class="fixed bottom-10 right-10 hidden z-[200] px-6 py-4 rounded-2xl shadow-2xl text-white font-black text-sm transition-all transform scale-95 opacity-0"></div>
+    <div id="toast" class="fixed bottom-10 right-10 hidden z-[200] px-6 py-4 rounded-2xl shadow-2xl text-white font-black text-sm transition-all transform scale-100 opacity-100 bg-slate-900"></div>
 
     <script>
+        // -- CONFIGURATION --
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzQ97awR8_PaHPjv5zsPMF2xwtrWlwBjJad6FyHQ-54UfcgIXjnUoP233lXLxuco57azQ/exec"; // Ganti dengan URL Google Apps Script Anda
+        
         // -- STATE --
         const acMap = { 'PK-TWY':'GIV', 'PK-TWX':'B300', 'PK-TWW':'C200', 'PK-TWV':'B412', 'PK-TWZ':'AW109' };
         let reports = [];
+        let crewMaster = {};
         let rowIdx = 0;
+        let isSyncing = false;
 
-        // -- UTILS --
-        const formatIDDate = (s) => {
-            if(!s) return '';
-            const d = new Date(s);
-            const m = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-            return `${d.getDate()} ${m[d.getMonth()]} ${d.getFullYear()}`;
-        }
+        // -- CORE UTILS --
+        const formatIDDate = (s) => { 
+            if(!s) return ''; 
+            const d = new Date(s); 
+            const m = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember']; 
+            return `${d.getDate()} ${m[d.getMonth()]} ${d.getFullYear()}`; 
+        };
 
-        const tick = () => {
-            const now = new Date();
-            document.getElementById('nav-clock').innerText = now.toISOString().substr(11, 8) + ' UTC';
-            document.getElementById('nav-date').innerText = formatIDDate(now);
-        }
+        const tick = () => { 
+            const now = new Date(); 
+            const clockEl = document.getElementById('nav-clock');
+            const dateEl = document.getElementById('nav-date');
+            
+            if (clockEl) clockEl.innerText = now.toISOString().substr(11, 8) + ' UTC'; 
+            if (dateEl) dateEl.innerText = formatIDDate(now);
+        };
         setInterval(tick, 1000); tick();
+
+        // -- SYNC LOGIC --
+        async function syncData(silent = false) {
+            if (isSyncing || !SCRIPT_URL || SCRIPT_URL === "" || SCRIPT_URL.includes("URL_GOOGLE")) return;
+            isSyncing = true;
+            if (!silent) document.getElementById('sync-loader').classList.remove('hidden');
+            
+            try {
+                const response = await fetch(SCRIPT_URL);
+                const data = await response.json();
+                reports = data.reports || [];
+                crewMaster = data.crews || {};
+                
+                renderDashboard();
+                syncPrepareBy();
+                if(!document.getElementById('view-crew-mgmt').classList.contains('hidden')) renderCrewMgmtList();
+                if (!silent) showToast("DATA SYNCED");
+            } catch (error) {
+                console.error("Sync error:", error);
+                if (!silent) showToast("SYNC FAILED", "error");
+            } finally {
+                isSyncing = false;
+                document.getElementById('sync-loader').classList.add('hidden');
+            }
+        }
+
+        async function apiPost(action, payload) {
+            if (!SCRIPT_URL || SCRIPT_URL === "" || SCRIPT_URL.includes("URL_GOOGLE")) return true;
+            document.getElementById('sync-loader').classList.remove('hidden');
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    cache: 'no-cache',
+                    body: JSON.stringify({ action, ...payload })
+                });
+                return true;
+            } catch (e) { return false; }
+            finally { document.getElementById('sync-loader').classList.add('hidden'); }
+        }
 
         // -- NAVIGATION --
         function showView(v) {
-            document.getElementById('view-dashboard').classList.toggle('hidden', v !== 'dashboard');
-            document.getElementById('view-form').classList.toggle('hidden', v !== 'form');
+            document.getElementById('view-dashboard').classList.add('hidden');
+            document.getElementById('view-form').classList.add('hidden');
+            document.getElementById('view-crew-mgmt').classList.add('hidden');
+            
+            const target = document.getElementById(`view-${v}`);
+            if (target) target.classList.remove('hidden');
+            
             if(v === 'dashboard') renderDashboard();
+            if(v === 'crew-mgmt') renderCrewMgmtList();
+            window.scrollTo(0,0);
         }
 
-        function openNewForm() {
-            document.getElementById('form-title').innerText = "PELAPORAN BARU";
-            resetForm();
-            showView('form');
+        // -- CREW MGMT --
+        function renderCrewMgmtList() {
+            const c = document.getElementById('crew-list-container');
+            if(!c) return;
+            c.innerHTML = '';
+            Object.entries(crewMaster).forEach(([n, url]) => {
+                const card = document.createElement('div');
+                card.className = "glass-card rounded-2xl p-4 flex items-center justify-between group";
+                card.innerHTML = `<div class="flex items-center gap-4"><div class="w-12 h-10 bg-white rounded border border-slate-100 p-1"><img src="${url}" class="h-full w-full object-contain"></div><div><p class="font-black text-sm">${n}</p></div></div><div class="flex gap-2"><button onclick="editCrew('${n}','${url}')" class="text-blue-600 p-2">✎</button><button onclick="deleteCrew('${n}')" class="text-red-500 p-2">✕</button></div>`;
+                c.appendChild(card);
+            });
         }
 
-        // -- FORM LOGIC --
-        function updateAcType() {
-            const r = document.getElementById('acReg').value;
-            document.getElementById('acType').value = acMap[r] || '';
+        async function deleteCrew(n) {
+            if(confirm('Hapus ' + n + '?')) {
+                delete crewMaster[n];
+                await apiPost('syncCrews', { crews: crewMaster });
+                renderCrewMgmtList();
+                syncPrepareBy();
+                showToast("DELETED");
+            }
         }
 
-        document.getElementById('flightDateInput').addEventListener('change', (e) => {
-            document.getElementById('formattedDateLabel').innerText = formatIDDate(e.target.value);
+        function editCrew(n, u) {
+            document.getElementById('crew-name-input').value = n;
+            document.getElementById('crew-sign-input').value = u;
+            document.getElementById('edit-crew-id').value = n;
+            document.getElementById('crew-form-title').innerText = "Edit Personnel";
+        }
+
+        document.getElementById('crewMgmtForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const n = document.getElementById('crew-name-input').value.trim();
+            const u = document.getElementById('crew-sign-input').value.trim();
+            const old = document.getElementById('edit-crew-id').value;
+            if (old && old !== n) delete crewMaster[old];
+            crewMaster[n] = u;
+            await apiPost('syncCrews', { crews: crewMaster });
+            resetCrewMgmtForm();
+            renderCrewMgmtList();
+            syncPrepareBy();
+            showToast("PERSONNEL SAVED");
         });
+
+        function resetCrewMgmtForm() { document.getElementById('crewMgmtForm').reset(); document.getElementById('edit-crew-id').value = ''; document.getElementById('crew-form-title').innerText = "Add Personnel"; }
+
+        // -- REPORTING FORM --
+        function updateAcType() { const r = document.getElementById('acReg').value; document.getElementById('acType').value = acMap[r] || ''; }
+        
+        function syncPrepareBy() {
+            const d = document.getElementById('preparedBy');
+            const dl = document.getElementById('crew-names');
+            if(!d || !dl) return;
+            
+            const inputs = document.querySelectorAll('.crew-name-input');
+            const manual = [...new Set(Array.from(inputs).map(i => i.value).filter(v => v.trim() !== ""))];
+            const all = [...new Set([...Object.keys(crewMaster), ...manual])];
+            const curr = d.value;
+            
+            d.innerHTML = '<option value="">-- SELECT NAME --</option>';
+            dl.innerHTML = '';
+            
+            all.forEach(n => { 
+                d.add(new Option(n, n)); 
+                let o = document.createElement('option'); o.value = n; dl.appendChild(o); 
+            });
+            d.value = curr;
+            updateSignPreview();
+        }
+
+        function updateSignPreview() {
+            const n = document.getElementById('preparedBy').value;
+            const c = document.getElementById('sign-preview-container');
+            const i = document.getElementById('sign-preview-img');
+            if(!c || !i) return;
+            if(crewMaster[n]) { i.src = crewMaster[n]; c.classList.remove('hidden'); } else { c.classList.add('hidden'); }
+        }
 
         function addNewCrewRow(data = null) {
             rowIdx++;
             const b = document.getElementById('crewTableBody');
+            if(!b) return;
             const tr = document.createElement('tr');
-            tr.className = "border-b border-slate-50 hover:bg-slate-50 transition-colors group";
-            
+            tr.className = "border-b border-slate-50 hover:bg-slate-50 transition-colors";
             const docs = data?.docs || [];
-            const health = data?.health || '';
-
+            const h = data?.health || '';
             tr.innerHTML = `
-                <td class="px-4 py-6 text-center font-black text-slate-200 group-hover:text-blue-600 transition-colors">${rowIdx}</td>
-                <td class="px-4 py-4">
-                    <input list="crew-names" name="name_${rowIdx}" value="${data?.name || ''}" required oninput="syncPrepareBy()"
-                        class="crew-name-input w-full px-4 py-2 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-500">
-                </td>
-                <td class="px-4 py-4">
-                    <select name="rank_${rowIdx}" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold bg-white">
-                        <option value="CAPT" ${data?.rank === 'CAPT' ? 'selected' : ''}>CAPT</option>
-                        <option value="FO" ${data?.rank === 'FO' ? 'selected' : ''}>FO</option>
-                    </select>
-                </td>
-                <td class="px-4 py-4">
-                    <div class="flex flex-col gap-1">
-                        ${['LICENSE','PASSPORT','ID CARD'].map(d => `
-                            <button type="button" onclick="this.classList.toggle('btn-toggle-active')" class="doc-btn px-2 py-1 border border-slate-100 rounded text-[8px] font-black uppercase transition-all ${docs.includes(d) ? 'btn-toggle-active' : ''}">${d}</button>
-                        `).join('')}
-                    </div>
-                </td>
-                <td class="px-4 py-4">
-                    <div class="grid grid-cols-2 gap-1 mb-2">
-                        <input type="time" name="on_${rowIdx}" value="${data?.on || ''}" onchange="calcT(${rowIdx})" class="text-[10px] border border-slate-200 rounded p-1 w-full font-bold">
-                        <input type="time" name="off_${rowIdx}" value="${data?.off || ''}" onchange="calcT(${rowIdx})" class="text-[10px] border border-slate-200 rounded p-1 w-full font-bold">
-                    </div>
-                    <div class="bg-blue-50 rounded-lg p-1 text-center">
-                        <input type="text" id="total_${rowIdx}" name="total_${rowIdx}" value="${data?.total || ''}" readonly placeholder="00:00" class="text-[10px] font-black text-blue-700 bg-transparent w-full text-center outline-none">
-                    </div>
-                </td>
-                <td class="px-4 py-4">
-                    <div class="space-y-2">
-                        <div class="grid grid-cols-2 gap-2">
-                            <input type="text" name="bp_${rowIdx}" value="${data?.bp || ''}" placeholder="BP" class="w-full text-[10px] border border-slate-200 rounded p-1 font-bold text-center">
-                            <input type="text" name="alc_${rowIdx}" value="${data?.alcohol || '0'}" class="w-full text-[10px] border border-slate-200 rounded p-1 text-center font-bold">
-                        </div>
-                        <div class="flex gap-1 pt-1">
-                            <button type="button" onclick="setH(this,'FIT')" class="health-btn flex-1 text-[8px] font-black p-1 border border-slate-100 rounded transition-all ${health==='FIT' ? 'btn-fit-active' : ''}">FIT</button>
-                            <button type="button" onclick="setH(this,'UNFIT')" class="health-btn flex-1 text-[8px] font-black p-1 border border-slate-100 rounded transition-all ${health==='UNFIT' ? 'btn-unfit-active' : ''}">UNFIT</button>
-                        </div>
-                    </div>
-                </td>
-                <td class="px-4 py-4">
-                    <button type="button" onclick="this.closest('tr').remove(); syncPrepareBy();" class="text-slate-200 hover:text-red-500 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
-                    </button>
-                </td>
+                <td class="px-4 py-6 text-center font-black text-slate-200">${rowIdx}</td>
+                <td class="px-4 py-4"><input list="crew-names" name="name_${rowIdx}" value="${data?.name || ''}" required oninput="syncPrepareBy()" class="crew-name-input w-full px-4 py-2 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-blue-500"></td>
+                <td class="px-4 py-4"><select name="rank_${rowIdx}" class="w-full px-2 py-2 border border-slate-200 rounded-xl text-xs font-bold bg-white"><option value="CAPT" ${data?.rank==='CAPT'?'selected':''}>CAPT</option><option value="FO" ${data?.rank==='FO'?'selected':''}>FO</option></select></td>
+                <td class="px-4 py-4"><div class="flex flex-col gap-1">${['LICENSE','PASSPORT','ID CARD'].map(d => `<button type="button" onclick="this.classList.toggle('btn-toggle-active')" class="doc-btn px-2 py-1 border border-slate-100 rounded text-[7px] font-black uppercase tracking-tighter ${docs.includes(d)?'btn-toggle-active':''}">${d}</button>`).join('')}</div></td>
+                <td class="px-4 py-4"><div class="grid grid-cols-2 gap-1 mb-1"><div><p class="text-[6px] text-slate-400 uppercase font-black">Sign In</p><input type="time" name="on_${rowIdx}" value="${data?.on||''}" onchange="calcT(${rowIdx})" class="text-[10px] border border-slate-200 rounded p-1 w-full font-bold"></div><div><p class="text-[6px] text-slate-400 uppercase font-black">Sign Out</p><input type="time" name="off_${rowIdx}" value="${data?.off||''}" onchange="calcT(${rowIdx})" class="text-[10px] border border-slate-200 rounded p-1 w-full font-bold"></div></div><input type="text" id="total_${rowIdx}" name="total_${rowIdx}" value="${data?.total||''}" readonly placeholder="00:00" class="text-[9px] font-black text-blue-700 bg-blue-50 w-full text-center outline-none p-1 rounded-lg"></td>
+                <td class="px-4 py-4"><div class="space-y-1"><div class="grid grid-cols-2 gap-1"><div><p class="text-[6px] text-slate-400 uppercase font-black">BP Check</p><input type="text" name="bp_${rowIdx}" value="${data?.bp||''}" placeholder="120/80" class="w-full text-[9px] border border-slate-200 rounded p-1 font-bold text-center"></div><div><p class="text-[6px] text-slate-400 uppercase font-black">ACHL</p><input type="text" name="alc_${rowIdx}" value="${data?.alcohol||'0'}" class="w-full text-[9px] border border-slate-200 rounded p-1 text-center font-bold"></div></div><div class="flex gap-1"><button type="button" onclick="setH(this,'FIT')" class="health-btn flex-1 text-[7px] font-black p-1 border rounded ${h==='FIT'?'btn-fit-active':''}">FIT</button><button type="button" onclick="setH(this,'UNFIT')" class="health-btn flex-1 text-[7px] font-black p-1 border rounded ${h==='UNFIT'?'btn-unfit-active':''}">UNFIT</button></div></div></td>
+                <td class="px-4 py-4"><button type="button" onclick="this.closest('tr').remove(); syncPrepareBy();" class="text-slate-200 hover:text-red-500">✕</button></td>
             `;
             b.appendChild(tr);
             syncPrepareBy();
         }
 
-        function setH(btn, t) {
-            btn.closest('div').querySelectorAll('.health-btn').forEach(b => b.classList.remove('btn-fit-active','btn-unfit-active'));
-            btn.classList.add(t === 'FIT' ? 'btn-fit-active' : 'btn-unfit-active');
+        function setH(b, t) { b.closest('div').querySelectorAll('.health-btn').forEach(x => x.classList.remove('btn-fit-active','btn-unfit-active')); b.classList.add(t === 'FIT' ? 'btn-fit-active' : 'btn-unfit-active'); }
+        
+        function calcT(i) { 
+            const on = document.getElementsByName(`on_${i}`)[0]?.value; 
+            const off = document.getElementsByName(`off_${i}`)[0]?.value; 
+            if(on && off) { 
+                const [h1, m1] = on.split(':').map(Number); 
+                const [h2, m2] = off.split(':').map(Number); 
+                let d = (h2*60 + m2) - (h1*60 + m1); 
+                if(d < 0) d += 1440; 
+                const target = document.getElementById(`total_${i}`);
+                if(target) target.value = `${Math.floor(d/60).toString().padStart(2,'0')}:${(d%60).toString().padStart(2,'0')}`; 
+            } 
         }
 
-        function calcT(i) {
-            const on = document.getElementsByName(`on_${i}`)[0].value;
-            const off = document.getElementsByName(`off_${i}`)[0].value;
-            if(on && off) {
-                const [h1, m1] = on.split(':').map(Number);
-                const [h2, m2] = off.split(':').map(Number);
-                let d = (h2*60 + m2) - (h1*60 + m1);
-                if(d < 0) d += 1440;
-                document.getElementById(`total_${i}`).value = `${Math.floor(d/60).toString().padStart(2,'0')}:${(d%60).toString().padStart(2,'0')}`;
-            }
+        function openNewForm() { 
+            const title = document.getElementById('form-title');
+            if(title) title.innerText = "NEW REPORT"; 
+            resetForm(); 
+            showView('form'); 
         }
-
-        function syncPrepareBy() {
-            const d = document.getElementById('preparedBy');
-            const inputs = document.querySelectorAll('.crew-name-input');
-            const names = [...new Set(Array.from(inputs).map(i => i.value).filter(v => v.trim() !== ""))];
-            const curr = d.value;
-            d.innerHTML = '<option value="">-- PILIH NAMA --</option>';
-            names.forEach(n => { d.add(new Option(n, n)); });
-            d.value = curr;
-        }
-
-        function resetForm() {
-            document.getElementById('reportingForm').reset();
-            document.getElementById('edit-id').value = '';
-            document.getElementById('crewTableBody').innerHTML = '';
-            document.getElementById('formattedDateLabel').innerText = '';
-            rowIdx = 0;
-            addNewCrewRow();
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('flightDateInput').value = today;
-            document.getElementById('formattedDateLabel').innerText = formatIDDate(today);
-            updateAcType();
+        
+        function resetForm() { 
+            const form = document.getElementById('reportingForm');
+            if(form) form.reset(); 
+            const editId = document.getElementById('edit-id');
+            if(editId) editId.value = ''; 
+            const tbody = document.getElementById('crewTableBody');
+            if(tbody) tbody.innerHTML = ''; 
+            rowIdx = 0; addNewCrewRow(); 
+            const t = new Date().toISOString().split('T')[0]; 
+            const dateInput = document.getElementById('flightDateInput');
+            if(dateInput) dateInput.value = t; 
+            const label = document.getElementById('formattedDateLabel');
+            if(label) label.innerText = formatIDDate(t); 
+            updateAcType(); updateSignPreview(); 
         }
 
         // -- DASHBOARD --
         function renderDashboard() {
             const c = document.getElementById('dashboard-content');
+            if(!c) return;
+            
             document.getElementById('stat-total').innerText = reports.length;
             document.getElementById('stat-regs').innerText = [...new Set(reports.map(r => r.ac_reg))].length;
             document.getElementById('stat-latest').innerText = reports.length > 0 ? reports[reports.length-1].route : '-';
-
-            if (reports.length === 0) {
-                c.innerHTML = `<div class="py-20 text-center text-slate-300 font-bold uppercase tracking-widest text-sm">Belum ada data pelaporan.</div>`;
-                return;
+            
+            if (reports.length === 0) { 
+                c.innerHTML = `<div class="py-20 text-center text-slate-300 font-bold uppercase text-xs">No Data Found</div>`; 
+                return; 
             }
-
-            const groups = reports.reduce((acc, r) => {
-                const y = new Date(r.date).getFullYear();
-                if (!acc[y]) acc[y] = {};
-                if (!acc[y][r.ac_reg]) acc[y][r.ac_reg] = [];
-                acc[y][r.ac_reg].push(r);
-                return acc;
+            
+            const groups = reports.reduce((acc, r) => { 
+                const y = new Date(r.date).getFullYear(); 
+                if (!acc[y]) acc[y] = {}; 
+                if (!acc[y][r.ac_reg]) acc[y][r.ac_reg] = []; 
+                acc[y][r.ac_reg].push(r); 
+                return acc; 
             }, {});
-
+            
             c.innerHTML = '';
             Object.keys(groups).sort((a,b) => b-a).forEach(y => {
-                const yDiv = document.createElement('div');
-                yDiv.className = "glass-card rounded-[2rem] overflow-hidden mb-8 shadow-sm border border-slate-200";
-                let regItems = '';
+                let regs = '';
                 Object.keys(groups[y]).forEach(reg => {
                     const list = groups[y][reg];
-                    regItems += `
-                        <details class="group border-t border-slate-100">
-                            <summary class="flex justify-between p-6 cursor-pointer hover:bg-slate-50 transition-colors list-none">
-                                <div class="flex items-center gap-6">
-                                    <span class="bg-blue-600 text-white px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest">${reg}</span>
-                                    <span class="text-slate-400 text-xs font-black uppercase tracking-widest">${acMap[reg] || ''}</span>
-                                </div>
-                                <div class="flex items-center gap-4">
-                                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">${list.length} Records</span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-300 group-open:rotate-180 transition-transform" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
-                                </div>
-                            </summary>
-                            <div class="px-4 pb-4">
-                                <div class="overflow-hidden rounded-2xl border border-slate-100 bg-white">
-                                    <table class="w-full text-left text-xs">
-                                        <thead>
-                                            <tr class="bg-slate-50 text-slate-400 font-black uppercase text-[9px] tracking-[0.15em] border-b border-slate-50">
-                                                <th class="px-6 py-4">TANGGAL</th>
-                                                <th class="px-6 py-4">ROUTE</th>
-                                                <th class="px-6 py-4">PREPARED BY</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            ${list.map(r => `
-                                                <tr onclick="viewDetail('${r.id}')" class="border-b last:border-0 border-slate-50 hover:bg-blue-50/50 cursor-pointer transition-colors group">
-                                                    <td class="px-6 py-4 font-bold text-slate-700">${formatIDDate(r.date)}</td>
-                                                    <td class="px-6 py-4 font-black text-blue-600 group-hover:translate-x-1 transition-transform inline-block">${r.route}</td>
-                                                    <td class="px-6 py-4 text-slate-400 font-bold italic">${r.prepared_by}</td>
-                                                </tr>
-                                            `).join('')}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </details>
-                    `;
+                    regs += `<details class="group border-t border-slate-100"><summary class="flex justify-between p-5 cursor-pointer hover:bg-slate-50 list-none"><div class="flex items-center gap-4"><span class="bg-blue-600 text-white px-3 py-1 rounded-full text-[9px] font-black">${reg}</span><span class="text-slate-400 text-xs font-black">${acMap[reg]||''}</span></div><span class="text-[10px] font-black text-slate-400 uppercase">${list.length} Logs</span></summary><div class="px-4 pb-4"><div class="rounded-2xl border border-slate-100 bg-white"><table class="w-full text-left text-xs"><thead><tr class="bg-slate-50 text-slate-400 text-[8px] uppercase font-black"><th class="px-5 py-3">DATE</th><th class="px-5 py-3">ROUTE</th><th class="px-5 py-3">PREPARED BY</th></tr></thead><tbody>${list.map(r => `<tr onclick="viewDetail('${r.id}')" class="border-b last:border-0 border-slate-50 hover:bg-blue-50/50 cursor-pointer transition-all"><td class="px-5 py-3 font-bold text-slate-700">${formatIDDate(r.date)}</td><td class="px-5 py-3 font-black text-blue-600">${r.route}</td><td class="px-5 py-3 text-slate-400 italic">${r.prepared_by}</td></tr>`).join('')}</tbody></table></div></div></details>`;
                 });
-                yDiv.innerHTML = `<div class="bg-slate-900 p-6 text-white font-black tracking-[0.3em] text-lg">${y}</div>${regItems}`;
+                const yDiv = document.createElement('div'); yDiv.className = "glass-card rounded-3xl overflow-hidden mb-6 shadow-sm";
+                yDiv.innerHTML = `<div class="bg-slate-900 p-5 text-white font-black tracking-widest">${y}</div>${regs}`;
                 c.appendChild(yDiv);
             });
         }
 
         // -- DATA OPS --
-        function viewDetail(id) {
-            const r = reports.find(x => x.id === id);
-            if(!r) return;
-
-            document.getElementById('detail-subtitle').innerText = `${r.ac_reg} • ${r.route}`;
-            document.getElementById('det-date').innerText = formatIDDate(r.date);
-            document.getElementById('det-ac').innerText = `${r.ac_reg} (${r.ac_type})`;
-            document.getElementById('det-route').innerText = r.route;
-            document.getElementById('det-etd').innerText = r.etd;
-            document.getElementById('det-note').innerText = r.note || 'Tidak ada catatan khusus.';
-
-            const listBody = document.getElementById('det-crew-list');
-            listBody.innerHTML = '<p class="text-[9px] text-slate-400 font-black uppercase mb-4 tracking-widest">PERSONNEL DETAILS</p>';
-            r.crew.forEach(c => {
-                const item = document.createElement('div');
-                item.className = "bg-white p-6 rounded-[1.5rem] border border-slate-100 flex justify-between items-center shadow-sm";
-                item.innerHTML = `
-                    <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center font-black text-blue-600 border border-slate-100 text-xs">${c.rank}</div>
-                        <div>
-                            <p class="font-black text-slate-800 text-base">${c.name}</p>
-                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Sign Time: ${c.on} - ${c.off} (${c.total})</p>
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-xs font-black ${c.health === 'FIT' ? 'text-emerald-500' : 'text-red-500'} tracking-widest">${c.health}</p>
-                        <p class="text-[9px] text-slate-400 font-black mt-1">BP: ${c.bp || '-'} | ACHL: ${c.alcohol || '0'}</p>
-                    </div>
-                `;
-                listBody.appendChild(item);
-            });
-
+        async function viewDetail(id) {
+            const r = reports.find(x => x.id === id); if(!r) return;
+            const subtitle = document.getElementById('detail-subtitle');
+            if(subtitle) subtitle.innerText = `${r.ac_reg} • ${r.route}`;
+            
+            const body = document.getElementById('detail-body');
+            if(body) {
+                body.innerHTML = `<div class="grid grid-cols-2 md:grid-cols-4 gap-4">${[{l:'Date',v:formatIDDate(r.date)},{l:'Aircraft',v:r.ac_reg+' ('+r.ac_type+')'},{l:'Route',v:r.route},{l:'ETD',v:r.etd+' UTC'}].map(x=>`<div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm"><p class="text-[8px] text-slate-400 font-black uppercase mb-1">${x.l}</p><p class="font-bold text-slate-800 text-sm">${x.v}</p></div>`).join('')}</div><div class="space-y-2"><p class="text-[8px] font-black text-slate-400 uppercase tracking-widest">Crew Details</p>${r.crew.map(c=>`<div class="bg-white p-4 rounded-2xl border border-slate-100 flex justify-between items-center shadow-sm"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center font-black text-blue-600 text-[9px]">${c.rank}</div><div><p class="font-black text-sm">${c.name}</p><p class="text-[9px] text-slate-400 uppercase">Time: ${c.on}-${c.off} (${c.total})</p></div></div><div class="text-right"><p class="text-[10px] font-black ${c.health==='FIT'?'text-emerald-500':'text-red-500'} tracking-wider">${c.health}</p><p class="text-[8px] text-slate-400 font-black">BP: ${c.bp||'-'} | Alc: ${c.alcohol||'0'}</p></div></div>`).join('')}</div><div class="bg-amber-50/50 p-6 rounded-2xl border border-amber-100/30 font-medium text-slate-600 text-xs italic">${r.note||'-'}</div>`;
+            }
+            
             document.getElementById('btn-edit').onclick = () => { closeDetail(); startEdit(id); };
             document.getElementById('btn-duplicate').onclick = () => { closeDetail(); startEdit(id, true); };
-            document.getElementById('btn-delete').onclick = () => { if(confirm('Hapus laporan ini permanen?')) { reports = reports.filter(x => x.id !== id); showToast("DATA DIHAPUS"); closeDetail(); renderDashboard(); } };
+            document.getElementById('btn-delete').onclick = async () => { if(confirm('Hapus laporan ini?')) { reports = reports.filter(x => x.id !== id); await apiPost('deleteReport', {id}); renderDashboard(); closeDetail(); showToast("REPORT DELETED"); } };
             document.getElementById('btn-print').onclick = () => generatePDF(id);
-
-            document.getElementById('modal-detail').classList.remove('hidden');
-        }
-
-        function closeDetail() { document.getElementById('modal-detail').classList.add('hidden'); }
-
-        function startEdit(id, isDup = false) {
-            const r = reports.find(x => x.id === id);
-            if(!r) return;
-            resetForm();
-            const f = document.getElementById('reportingForm');
-            f.route.value = r.route; f.date.value = r.date; f.etd.value = r.etd; f.ac_reg.value = r.ac_reg; f.note.value = r.note;
-            updateAcType();
-            if(!isDup) { document.getElementById('edit-id').value = r.id; document.getElementById('form-title').innerText = "EDIT LAPORAN"; }
-            else { document.getElementById('form-title').innerText = "DUPLICATE LAPORAN"; }
-            document.getElementById('crewTableBody').innerHTML = ''; rowIdx = 0;
-            r.crew.forEach(c => addNewCrewRow(c));
-            syncPrepareBy(); f.prepared_by.value = r.prepared_by;
-            showView('form');
-        }
-
-        // -- PRINT PDF LOGIC (A4 LANDSCAPE IDENTICAL) --
-        function generatePDF(id) {
-            const r = reports.find(x => x.id === id);
-            if(!r) return;
-
-            // Populate Print Area
-            document.getElementById('pr-route').innerText = r.route;
-            document.getElementById('pr-date').innerText = formatIDDate(r.date);
-            document.getElementById('pr-etd').innerText = r.etd;
-            document.getElementById('pr-type').innerText = r.ac_type;
-            document.getElementById('pr-reg').innerText = r.ac_reg;
-            document.getElementById('pr-note').innerText = r.note || '-';
-            document.getElementById('pr-sign-name').innerText = r.prepared_by;
-
-            const prBody = document.getElementById('pr-table-body');
-            prBody.innerHTML = '';
             
-            // Render actual crew rows
-            r.crew.forEach((c, idx) => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td align="center">${idx+1}.</td>
-                    <td>${c.name}</td>
-                    <td align="center">${c.rank}</td>
-                    <td align="center">${c.docs.includes('LICENSE') ? 'YES' : ''}</td>
-                    <td align="center">${c.docs.includes('PASSPORT') ? 'YES' : ''}</td>
-                    <td align="center">${c.docs.includes('ID CARD') ? 'YES' : ''}</td>
-                    <td align="center">${c.on}<br>${c.off}</td>
-                    <td align="center">${c.total}</td>
-                    <td align="center">${c.bp}</td>
-                    <td align="center">${c.alcohol}</td>
-                    <td align="center">${c.health}</td>
-                `;
-                prBody.appendChild(tr);
-            });
+            const modal = document.getElementById('modal-detail');
+            if(modal) modal.classList.remove('hidden');
+        }
 
-            // Add empty rows for aesthetic (total 7 rows as per PDF sample)
-            const remaining = 7 - r.crew.length;
-            for(let i=0; i<remaining; i++) {
-                const tr = document.createElement('tr');
-                tr.className = "empty-row";
-                tr.innerHTML = `<td align="center">${r.crew.length + i + 1}.</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>`;
-                prBody.appendChild(tr);
+        function closeDetail() { const modal = document.getElementById('modal-detail'); if(modal) modal.classList.add('hidden'); }
+        
+        function startEdit(id, isDup = false) { 
+            const r = reports.find(x => x.id === id); if(!r) return; 
+            resetForm(); 
+            const f = document.getElementById('reportingForm'); 
+            f.route.value = r.route; f.date.value = r.date; f.etd.value = r.etd; f.ac_reg.value = r.ac_reg; f.note.value = r.note; 
+            updateAcType(); 
+            const title = document.getElementById('form-title');
+            if(!isDup) { 
+                const editId = document.getElementById('edit-id');
+                if(editId) editId.value = r.id; 
+                if(title) title.innerText = "EDIT REPORT"; 
+            } else { 
+                if(title) title.innerText = "DUPLICATE REPORT"; 
+            } 
+            const tbody = document.getElementById('crewTableBody');
+            if(tbody) tbody.innerHTML = ''; 
+            rowIdx = 0; r.crew.forEach(c => addNewCrewRow(c)); 
+            syncPrepareBy(); f.prepared_by.value = r.prepared_by; 
+            updateSignPreview(); showView('form'); 
+        }
+
+        function generatePDF(id) { 
+            const r = reports.find(x => x.id === id); if(!r) return; 
+            document.getElementById('pr-route').innerText = r.route; 
+            document.getElementById('pr-date').innerText = formatIDDate(r.date); 
+            document.getElementById('pr-etd').innerText = r.etd; 
+            document.getElementById('pr-type').innerText = r.ac_type; 
+            document.getElementById('pr-reg').innerText = r.ac_reg; 
+            document.getElementById('pr-note').innerText = r.note || '-'; 
+            document.getElementById('pr-sign-name').innerText = r.prepared_by; 
+            const pI = document.getElementById('pr-sign-img'); 
+            if (crewMaster[r.prepared_by]) { pI.src = crewMaster[r.prepared_by]; pI.style.display = 'block'; } else { pI.style.display = 'none'; } 
+            const b = document.getElementById('pr-table-body'); 
+            if(b) {
+                b.innerHTML = ''; 
+                r.crew.forEach((c, idx) => { 
+                    const tr = document.createElement('tr'); 
+                    tr.innerHTML = `<td align="center">${idx+1}.</td><td>${c.name}</td><td align="center">${c.rank}</td><td align="center">${c.docs.includes('LICENSE')?'YES':''}</td><td align="center">${c.docs.includes('PASSPORT')?'YES':''}</td><td align="center">${c.docs.includes('ID CARD')?'YES':''}</td><td align="center">${c.on}<br>${c.off}</td><td align="center">${c.total}</td><td align="center">${c.bp}</td><td align="center">${c.alcohol}</td><td align="center">${c.health}</td>`; 
+                    b.appendChild(tr); 
+                }); 
+                for(let i=0; i<(7 - r.crew.length); i++) { 
+                    let tr = document.createElement('tr'); 
+                    tr.style.height='25px'; 
+                    tr.innerHTML = `<td align="center">${r.crew.length+i+1}.</td>${'<td></td>'.repeat(10)}`; 
+                    b.appendChild(tr); 
+                }
             }
-
-            // Print
-            window.print();
+            window.print(); 
         }
 
-        function showToast(m) {
-            const t = document.getElementById('toast'); t.innerText = m; t.classList.remove('hidden');
-            t.className = "fixed bottom-10 right-10 z-[200] px-6 py-4 rounded-2xl shadow-2xl text-white font-black text-sm bg-slate-900 transition-all transform scale-100 opacity-100";
-            setTimeout(() => { t.classList.add('hidden'); }, 3000);
+        function showToast(m, t='s') { 
+            const e = document.getElementById('toast'); 
+            if(!e) return;
+            e.innerText = m; 
+            e.classList.remove('hidden'); 
+            e.style.opacity = '1'; 
+            setTimeout(() => { e.style.opacity = '0'; setTimeout(()=>e.classList.add('hidden'),300); }, 3000); 
         }
 
-        document.getElementById('reportingForm').addEventListener('submit', (e) => {
+        document.getElementById('reportingForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const f = e.target;
-            const id = document.getElementById('edit-id').value || Date.now().toString();
-            
+            const idInput = document.getElementById('edit-id');
+            const id = (idInput && idInput.value !== "") ? idInput.value : Date.now().toString();
             const crewArr = [];
             for(let i=1; i<=rowIdx; i++) {
-                const nameIn = document.getElementsByName(`name_${i}`)[0];
-                if(!nameIn) continue;
-                const row = nameIn.closest('tr');
-                const docs = Array.from(row.querySelectorAll('.doc-btn.btn-toggle-active')).map(b => b.innerText);
-                crewArr.push({
-                    name: nameIn.value, rank: f[`rank_${i}`].value, 
-                    on: f[`on_${i}`].value, off: f[`off_${i}`].value, total: document.getElementById(`total_${i}`).value,
-                    bp: f[`bp_${i}`].value, alcohol: f[`alc_${i}`].value, 
-                    health: row.querySelector('.btn-fit-active') ? 'FIT' : 'UNFIT', docs: docs
-                });
+                const nI = document.getElementsByName(`name_${i}`)[0]; if(!nI) continue;
+                const r = nI.closest('tr');
+                crewArr.push({ name: nI.value, rank: f[`rank_${i}`].value, on: f[`on_${i}`].value, off: f[`off_${i}`].value, total: document.getElementById(`total_${i}`).value, bp: f[`bp_${i}`].value, alcohol: f[`alc_${i}`].value, health: r.querySelector('.btn-fit-active') ? 'FIT' : 'UNFIT', docs: Array.from(r.querySelectorAll('.doc-btn.btn-toggle-active')).map(b => b.innerText) });
             }
-
-            const rObj = {
-                id, route: f.route.value, date: f.date.value, etd: f.etd.value, ac_reg: f.ac_reg.value,
-                ac_type: document.getElementById('acType').value, note: f.note.value, prepared_by: f.prepared_by.value, crew: crewArr
-            };
-
-            const exIdx = reports.findIndex(x => x.id === id);
-            if(exIdx > -1) reports[exIdx] = rObj; else reports.push(rObj);
-
-            showToast("LAPORAN DISIMPAN");
-            setTimeout(() => showView('dashboard'), 800);
+            const obj = { id, route: f.route.value, date: f.date.value, etd: f.etd.value, ac_reg: f.ac_reg.value, ac_type: document.getElementById('acType').value, note: f.note.value, prepared_by: f.prepared_by.value, crew: crewArr };
+            const exI = reports.findIndex(x => x.id === id);
+            if(exI > -1) reports[exI] = obj; else reports.push(obj);
+            showToast("SAVING TO SHEETS...");
+            await apiPost('saveReport', { payload: obj });
+            showView('dashboard');
+            syncData(true);
         });
 
-        window.onload = () => { renderDashboard(); addNewCrewRow(); };
+        window.onload = () => { 
+            syncData(); 
+            // Inisialisasi awal UI
+            const dashboard = document.getElementById('view-dashboard');
+            if(dashboard && dashboard.classList.contains('hidden') === false) renderDashboard();
+        };
     </script>
-
-    <datalist id="crew-names">
-        <option value="CAPT. M. RAMDANI M">
-    </datalist>
+    <datalist id="crew-names"></datalist>
 </body>
 </html>
