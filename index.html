@@ -33,27 +33,25 @@
                 padding: 0;
             }
             
-            /* Logo diperbesar sesuai permintaan (dari 50px ke 70px) */
             .header-logo { 
                 text-align: center; 
-                margin-top: -5px; 
-                margin-bottom: 5px; 
+                margin-top: -8px; 
+                margin-bottom: 4px; 
             }
             .header-logo img { height: 70px; width: auto; display: inline-block; }
 
             .flight-info-table { width: auto !important; margin-bottom: 2px; margin-left: 0; }
             .flight-info-table td { padding: 0px 4px !important; }
-            .flight-info-table td:first-child { font-weight: bold; width: 130px; }
+            .flight-info-table td:first-child { font-weight: bold; width: 140px; }
             
-            /* Table layout auto agar kolom bisa menyesuaikan */
+            /* Table layout auto agar kolom bisa menyesuaikan konten */
             table { width: 100%; border-collapse: collapse; table-layout: auto !important; margin-top: 2px; }
             th, td { 
                 border: 1px solid black; 
-                padding: 4px 5px; 
+                padding: 3px 5px; 
                 font-size: 11pt !important; 
                 text-align: center; 
                 overflow: hidden;
-                white-space: nowrap; /* Mencegah teks judul kolom pindah baris agar kolom menyusut maksimal */
             }
             
             /* Judul Utama Kuning */
@@ -61,7 +59,7 @@
                 background-color: #ffff00 !important;
                 font-weight: bold;
                 text-transform: uppercase;
-                padding: 6px !important;
+                padding: 5px !important;
                 font-size: 11pt !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
@@ -75,14 +73,14 @@
                 print-color-adjust: exact;
             }
             
-            /* Kolom Nama Kru: Melebar secara otomatis mengambil sisa ruang */
+            /* Kolom Nama Kru: Nowrap & Melebar Otomatis */
             .col-crew-name { 
                 text-align: left !important; 
-                width: 100% !important; /* Memaksa kolom ini mengambil sisa lebar yang ada */
-                white-space: normal !important; /* Nama panjang boleh pindah baris jika memang sisa ruang habis */
+                white-space: nowrap !important;
+                width: auto !important;
             }
 
-            /* Memaksa kolom lain untuk menyusut seminimal mungkin berdasarkan konten judulnya */
+            /* Kolom lainnya menyusut mengikuti konten judulnya */
             .col-shrink {
                 width: 1% !important;
                 white-space: nowrap !important;
@@ -91,7 +89,7 @@
             .no-border td { border: none !important; padding: 1px 0; text-align: left; font-size: 11pt !important; }
             
             .note-container { 
-                margin-top: 10px; 
+                margin-top: 8px; 
                 display: flex;
                 justify-content: space-between;
                 align-items: flex-start;
@@ -109,7 +107,7 @@
             }
             .signature-area { text-align: center; width: 250px; font-size: 11pt; }
             .signature-img-box { height: 55px; display: flex; align-items: center; justify-content: center; margin: 3px 0; }
-            .signature-img-box img { max-height: 100%; max-width: 100%; }
+            .signature-img-box img { max-height: 100%; max-width: 100%; object-fit: contain; }
         }
 
         #print-area { display: none; }
@@ -572,7 +570,18 @@
             document.getElementById('pr-reg').innerText = r.ac_reg; 
             document.getElementById('pr-note').innerText = r.note || '-'; 
             document.getElementById('pr-sign-name').innerText = r.prepared_by; 
-            const pI = document.getElementById('pr-sign-img'); if (crewMaster[r.prepared_by]) { pI.src = crewMaster[r.prepared_by]; pI.style.display = 'block'; } else { pI.style.display = 'none'; } 
+            
+            // Otomatis mengambil tanda tangan dari master data berdasarkan nama Prepared By
+            const pI = document.getElementById('pr-sign-img'); 
+            const signUrl = crewMaster[r.prepared_by];
+            if (signUrl) { 
+                pI.src = signUrl; 
+                pI.parentElement.style.display = 'flex'; 
+            } else { 
+                pI.src = ''; 
+                pI.parentElement.style.display = 'none'; 
+            } 
+            
             const b = document.getElementById('pr-table-body'); 
             if(b) {
                 b.innerHTML = ''; 
@@ -581,22 +590,22 @@
                     tr.innerHTML = `
                         <td align="center">${idx+1}.</td>
                         <td align="left" class="col-crew-name">${c.name}</td>
-                        <td align="center">${c.rank}</td>
-                        <td align="center">${c.docs.includes('LICENSE')?'YES':''}</td>
-                        <td align="center">${c.docs.includes('PASSPORT')?'YES':''}</td>
-                        <td align="center">${c.docs.includes('ID CARD')?'YES':''}</td>
-                        <td align="center">${formatTimeDisplay(c.on)}</td>
-                        <td align="center">${formatTimeDisplay(c.off)}</td>
-                        <td align="center">${c.total}</td>
-                        <td align="center">${c.bp}</td>
-                        <td align="center">${c.alcohol}</td>
-                        <td align="center">NIL</td>`; 
+                        <td align="center" class="col-shrink">${c.rank}</td>
+                        <td align="center" class="col-shrink">${c.docs.includes('LICENSE')?'YES':''}</td>
+                        <td align="center" class="col-shrink">${c.docs.includes('PASSPORT')?'YES':''}</td>
+                        <td align="center" class="col-shrink">${c.docs.includes('ID CARD')?'YES':''}</td>
+                        <td align="center" class="col-shrink">${formatTimeDisplay(c.on)}</td>
+                        <td align="center" class="col-shrink">${formatTimeDisplay(c.off)}</td>
+                        <td align="center" class="col-shrink">${c.total}</td>
+                        <td align="center" class="col-shrink">${c.bp}</td>
+                        <td align="center" class="col-shrink">${c.alcohol}</td>
+                        <td align="center" class="col-shrink">NIL</td>`; 
                     b.appendChild(tr); 
                 }); 
                 for(let i=0; i<(7 - r.crew.length); i++) { 
                     let tr = document.createElement('tr'); 
                     tr.style.height='22px'; 
-                    tr.innerHTML = `<td align="center">${r.crew.length+i+1}.</td><td class="col-crew-name"></td> ${'<td></td>'.repeat(10)}`; 
+                    tr.innerHTML = `<td align="center">${r.crew.length+i+1}.</td><td class="col-crew-name"></td> ${'<td class="col-shrink"></td>'.repeat(10)}`; 
                     b.appendChild(tr); 
                 }
             }
