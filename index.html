@@ -21,7 +21,7 @@
         .btn-unfit-active { background-color: #ef4444; color: white; border-color: #ef4444; }
         
         @media print {
-            @page { size: A4 landscape; margin: 0.3cm; } /* Margin halaman lebih kecil */
+            @page { size: A4 landscape; margin: 0.3cm; }
             body { background: white !important; font-family: 'Calibri', sans-serif !important; margin: 0; padding: 0; }
             #view-dashboard, #view-form, #view-crew-mgmt, nav, #toast, #modal-detail, #sync-loader { display: none !important; }
             
@@ -33,61 +33,62 @@
                 padding: 0;
             }
             
-            /* Logo diatur paling atas */
             .header-logo { 
                 text-align: center; 
-                margin-top: -5px; /* Menaikkan logo ke atas */
+                margin-top: -8px; 
                 margin-bottom: 2px; 
             }
-            .header-logo img { height: 55px; width: auto; display: inline-block; }
+            .header-logo img { height: 50px; width: auto; display: inline-block; }
 
-            /* Info penerbangan dirapatkan */
             .flight-info-table { width: auto !important; margin-bottom: 2px; margin-left: 0; }
             .flight-info-table td { padding: 0px 4px !important; }
             .flight-info-table td:first-child { font-weight: bold; width: 130px; }
             
-            /* Table layout auto agar kolom bisa menyesuaikan konten */
+            /* Table layout auto agar kolom nama bisa memanjang sesuai teks */
             table { width: 100%; border-collapse: collapse; table-layout: auto !important; margin-top: 2px; }
             th, td { 
                 border: 1px solid black; 
                 padding: 3px 5px; 
                 font-size: 11pt !important; 
                 text-align: center; 
-                word-wrap: normal !important;
                 overflow: hidden;
             }
             
-            /* Judul Utama Kuning */
+            /* Judul Utama Kuning (Sesuai Contoh Gambar) */
             .print-main-title {
                 background-color: #ffff00 !important;
                 font-weight: bold;
                 text-transform: uppercase;
-                padding: 5px !important; /* Padding lebih kecil */
-                font-size: 12pt !important;
+                padding: 4px !important;
+                font-size: 11pt !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
             }
 
-            /* Header Abu-abu Muda */
+            /* Header Abu-abu Muda (Sesuai Contoh Gambar) */
             .print-header-gray {
-                background-color: #e5e7eb !important; 
+                background-color: #d1d5db !important; /* Gray-300 untuk kontras yang pas */
                 font-weight: bold;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
             }
             
-            /* Kolom Nama Kru: Tidak boleh bungkus baris (nowrap) dan rata kiri */
+            /* Kolom Nama Kru: Nowrap (Satu baris otomatis lebar) */
             .col-crew-name { 
                 white-space: nowrap !important; 
                 text-align: left !important; 
-                width: auto !important;
+                width: 1% !important; /* Memaksa kolom menyusut ke konten terkecil tapi terhalang nowrap */
+                min-width: 200px;
             }
             
             .no-border td { border: none !important; padding: 1px 0; text-align: left; font-size: 11pt !important; }
             
-            .col-no { width: 35px; }
-            .col-rank { width: 60px; }
-            .col-on-off { width: 50px; }
+            .col-no { width: 30px; }
+            .col-rank { width: 50px; }
+            .col-on-off { width: 45px; }
 
-            /* Area Note dan Tanda Tangan dirapatkan */
             .note-container { 
-                margin-top: 8px; 
+                margin-top: 5px; 
                 display: flex;
                 justify-content: space-between;
                 align-items: flex-start;
@@ -97,14 +98,14 @@
                 font-size: 11pt;
             }
             #pr-note { 
-                min-height: 35px; 
+                min-height: 30px; 
                 border: 1px solid #000; 
                 padding: 4px; 
                 margin-top: 2px;
                 font-style: italic;
             }
             .signature-area { text-align: center; width: 250px; font-size: 11pt; }
-            .signature-img-box { height: 50px; display: flex; align-items: center; justify-content: center; margin: 2px 0; }
+            .signature-img-box { height: 45px; display: flex; align-items: center; justify-content: center; margin: 2px 0; }
             .signature-img-box img { max-height: 100%; max-width: 100%; }
         }
 
@@ -248,18 +249,18 @@
                     <th rowspan="2" class="col-rank">RANK</th>
                     <th colspan="3">PERSONEL DOCUMENT</th>
                     <th colspan="3">REPORTING TIME (UTC)</th>
-                    <th colspan="3">CHECK</th>
+                    <th colspan="2">CHECK</th>
+                    <th rowspan="2">REMARKS</th>
                 </tr>
                 <tr class="print-header-gray">
-                    <th width="80">LICENSE</th>
-                    <th width="80">PASSPORT</th>
-                    <th width="80">ID CARD</th>
+                    <th width="45">LICENSE</th>
+                    <th width="45">PASSPORT</th>
+                    <th width="45">ID CARD</th>
                     <th class="col-on-off">ON</th>
                     <th class="col-on-off">OFF</th>
                     <th class="col-on-off">TOTAL</th>
-                    <th width="80">BP</th>
-                    <th width="60">ACHL</th>
-                    <th width="80">REMARKS</th>
+                    <th width="55">BLOOD PRESS</th>
+                    <th width="35">ACHL</th>
                 </tr>
             </thead>
             <tbody id="pr-table-body"></tbody>
@@ -586,7 +587,7 @@
                         <td align="center">${c.total}</td>
                         <td align="center">${c.bp}</td>
                         <td align="center">${c.alcohol}</td>
-                        <td align="center">${c.health}</td>`; 
+                        <td align="center">NIL</td>`; 
                     b.appendChild(tr); 
                 }); 
                 for(let i=0; i<(7 - r.crew.length); i++) { 
