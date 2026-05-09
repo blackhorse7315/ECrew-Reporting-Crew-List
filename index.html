@@ -21,25 +21,59 @@
         .btn-unfit-active { background-color: #ef4444; color: white; border-color: #ef4444; }
         
         @media print {
-            @page { size: A4 landscape; margin: 1cm; }
-            body { background: white !important; font-family: 'Calibri', sans-serif !important; }
+            @page { size: A4 landscape; margin: 0.5cm; }
+            body { background: white !important; font-family: 'Calibri', sans-serif !important; margin: 0; padding: 0; }
             #view-dashboard, #view-form, #view-crew-mgmt, nav, #toast, #modal-detail, #sync-loader { display: none !important; }
-            #print-area { display: block !important; width: 100%; color: black; }
-            table { width: 100%; border-collapse: collapse; }
-            th, td { border: 1px solid black; padding: 4px 6px; font-size: 10pt; font-family: 'Calibri', sans-serif !important; }
-            .no-border td { border: none !important; padding: 2px 0; }
-            .title-main { font-size: 14pt; font-weight: bold; text-decoration: underline; margin: 15px 0; text-align: center; }
-            .header-logo { text-align: center; margin-bottom: 20px; }
-            .header-logo img { height: 80px; width: auto; display: inline-block; }
-            .flight-info-table { width: auto !important; margin-bottom: 10px; margin-left: 0; }
-            .flight-info-table td:first-child { font-weight: bold; width: 150px; text-align: left; }
-            .flight-info-table td:last-child { text-align: left; }
+            
+            #print-area { 
+                display: block !important; 
+                width: 100%; 
+                color: black; 
+                margin: 0;
+                padding: 0;
+            }
+            table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+            th, td { border: 1px solid black; padding: 3px 4px; font-size: 8.5pt; word-wrap: break-word; text-align: center; }
+            
+            .no-border td { border: none !important; padding: 1px 0; text-align: left; }
+            .title-main { font-size: 13pt; font-weight: bold; text-decoration: underline; margin: 5px 0; text-align: center; }
+            .header-logo { text-align: center; margin-bottom: 5px; }
+            .header-logo img { height: 60px; width: auto; display: inline-block; }
+            
+            .flight-info-table { width: auto !important; margin-bottom: 5px; margin-left: 0; font-size: 8.5pt; }
+            .flight-info-table td:first-child { font-weight: bold; width: 110px; }
+            
+            /* Penyesuaian Kolom Waktu */
+            .col-on-off { width: 45px; }
+            .col-rank { width: 50px; }
+            .col-no { width: 25px; }
+
+            .note-container { 
+                margin-top: 10px; 
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+            }
+            .note-box { 
+                width: 300px; /* Lebar dibatasi agar sejajar kira-kira kolom dokumen */
+                font-size: 8.5pt;
+            }
+            #pr-note { 
+                min-height: 40px; 
+                border: 1px solid #000; 
+                padding: 5px; 
+                margin-top: 2px;
+                font-style: italic;
+            }
+            .signature-area { text-align: center; width: 200px; }
+            .signature-img-box { height: 50px; display: flex; align-items: center; justify-content: center; margin: 2px 0; }
+            .signature-img-box img { max-height: 100%; max-width: 100%; }
         }
+
         #print-area { display: none; }
         .loader-spin { animation: spin 1s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         
-        /* Memastikan font Calibri diterapkan ke input dan select */
         input, select, textarea, button {
             font-family: 'Calibri', 'Candara', 'Segoe UI', 'Optima', 'Arial', sans-serif !important;
         }
@@ -47,7 +81,7 @@
 </head>
 <body class="min-h-screen pb-10">
 
-    <!-- Sync Indicator (Latar Belakang) -->
+    <!-- Sync Indicator -->
     <div id="sync-loader" class="fixed top-20 right-8 z-[60] hidden">
         <div class="bg-white px-4 py-2 rounded-full shadow-xl border border-blue-100 flex items-center gap-3">
             <svg class="loader-spin h-4 w-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21 12a9 9 0 11-6.219-8.56"></path></svg>
@@ -73,7 +107,6 @@
                         <p id="nav-clock" class="text-sm font-bold text-blue-700">00:00:00 UTC</p>
                         <p id="nav-date" class="text-[10px] text-slate-400 font-medium"></p>
                     </div>
-                    <!-- Manual Sync -->
                     <button onclick="syncData()" class="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all" title="Refresh Data">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                     </button>
@@ -152,12 +185,10 @@
 
     <!-- AREA CETAK -->
     <div id="print-area">
-        <!-- Logo Tengah Atas -->
         <div class="header-logo">
             <img src="https://lh3.googleusercontent.com/d/1WNcGjsZ9_Fp54xzOl01EYRqM6-wY5Zh7" alt="Logo" />
         </div>
 
-        <!-- Kolom Info Rata Kiri -->
         <table class="no-border flight-info-table">
             <tr><td>ROUTE</td><td>: <span id="pr-route"></span></td></tr>
             <tr><td>DATE</td><td>: <span id="pr-date"></span></td></tr>
@@ -167,9 +198,44 @@
         </table>
 
         <div align="center" class="title-main">REPORTING CREW LIST</div>
-        <table><thead><tr style="background: #f0f0f0;"><th rowspan="2" width="30">NO</th><th rowspan="2">CREW NAME</th><th rowspan="2" width="60">RANK</th><th colspan="3">PERSONEL DOCUMENT</th><th colspan="2">REPORTING TIME (UTC)</th><th colspan="3">CHECK</th></tr><tr style="background: #f0f0f0;"><th>LICENSE</th><th>PASSPORT</th><th>ID CARD</th><th>ON/OFF</th><th>TOTAL</th><th>BP</th><th>ACHL</th><th>REMARKS</th></tr></thead><tbody id="pr-table-body"></tbody></table>
-        <div style="margin-top: 20px; font-size: 10pt;"><strong>NOTE:</strong><br><div id="pr-note" style="min-height: 60px; border: 1px solid #ccc; padding: 10px; margin-top: 5px;"></div></div>
-        <div style="margin-top: 20px; display: flex; justify-content: flex-end;"><div style="text-align: center; width: 250px;"><p style="font-size: 9pt; margin-bottom: 5px;">PREPARED BY FLOPS<br>OR PILOT ON DUTY</p><div style="height: 60px; display: flex; align-items: center; justify-content: center; margin-bottom: 5px;"><img id="pr-sign-img" src="" style="max-height: 100%; max-width: 100%; object-fit: contain;"></div><p id="pr-sign-name" style="font-weight: bold; text-decoration: underline;"></p></div></div>
+        <table>
+            <thead>
+                <tr style="background: #f0f0f0;">
+                    <th rowspan="2" class="col-no">NO</th>
+                    <th rowspan="2">CREW NAME</th>
+                    <th rowspan="2" class="col-rank">RANK</th>
+                    <th colspan="3">PERSONEL DOCUMENT</th>
+                    <th colspan="3">REPORTING TIME (UTC)</th>
+                    <th colspan="3">CHECK</th>
+                </tr>
+                <tr style="background: #f0f0f0;">
+                    <th width="45">LICENSE</th>
+                    <th width="45">PASSPORT</th>
+                    <th width="45">ID CARD</th>
+                    <th class="col-on-off">ON</th>
+                    <th class="col-on-off">OFF</th>
+                    <th class="col-on-off">TOTAL</th>
+                    <th width="55">BP</th>
+                    <th width="35">ACHL</th>
+                    <th width="50">REMARKS</th>
+                </tr>
+            </thead>
+            <tbody id="pr-table-body"></tbody>
+        </table>
+
+        <div class="note-container">
+            <div class="note-box">
+                <strong>NOTE:</strong>
+                <div id="pr-note"></div>
+            </div>
+            <div class="signature-area">
+                <p style="font-size: 8pt; margin-bottom: 2px;">PREPARED BY FLOPS<br>OR PILOT ON DUTY</p>
+                <div class="signature-img-box">
+                    <img id="pr-sign-img" src="" alt="TTD">
+                </div>
+                <p id="pr-sign-name" style="font-weight: bold; text-decoration: underline; margin-top: 2px;"></p>
+            </div>
+        </div>
     </div>
 
     <!-- Message Toasts -->
@@ -221,39 +287,26 @@
             if (clockEl) clockEl.innerText = now.toISOString().substr(11, 8) + ' UTC'; 
             if (dateEl) dateEl.innerText = formatIDDate(now);
         };
-        setInterval(tick, 1000); 
+        setInterval(tick, 1000); tick();
 
         // -- SYNC LOGIC --
         async function syncData(silent = false) {
-            if (isSyncing || !SCRIPT_URL || SCRIPT_URL.includes("URL_GOOGLE")) {
-                if(!silent) showToast("API URL Belum Diatur", "error");
-                return;
-            }
+            if (isSyncing || !SCRIPT_URL || SCRIPT_URL.includes("URL_GOOGLE")) return;
             isSyncing = true;
             const loader = document.getElementById('sync-loader');
             if (!silent && loader) loader.classList.remove('hidden');
-            
             try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'GET',
-                    headers: { 'Accept': 'application/json' },
-                    cache: 'no-cache'
-                });
-                
-                if (!response.ok) throw new Error("Server response not OK");
-                
+                const response = await fetch(SCRIPT_URL);
                 const data = await response.json();
                 reports = (data.reports || []).sort((a,b) => new Date(b.date) - new Date(a.date));
                 crewMaster = data.crews || {};
-                
                 renderDashboard();
                 syncPrepareBy();
-                
                 if(!document.getElementById('view-crew-mgmt').classList.contains('hidden')) renderCrewMgmtList();
                 if (!silent) showToast("DATABASE SYNCED");
             } catch (error) {
                 console.error("Sync error:", error);
-                if (!silent) showToast("SYNC FAILED: Periksa Deployment GAS", "error");
+                if (!silent) showToast("SYNC FAILED", "error");
             } finally {
                 isSyncing = false;
                 if(loader) loader.classList.add('hidden');
@@ -272,10 +325,7 @@
                     body: JSON.stringify({ action, ...payload })
                 });
                 return true;
-            } catch (e) { 
-                console.error("Post error:", e);
-                return false; 
-            }
+            } catch (e) { return false; }
             finally { if(loader) loader.classList.add('hidden'); }
         }
 
@@ -480,8 +530,29 @@
             const b = document.getElementById('pr-table-body'); 
             if(b) {
                 b.innerHTML = ''; 
-                r.crew.forEach((c, idx) => { const tr = document.createElement('tr'); tr.innerHTML = `<td align="center">${idx+1}.</td><td>${c.name}</td><td align="center">${c.rank}</td><td align="center">${c.docs.includes('LICENSE')?'YES':''}</td><td align="center">${c.docs.includes('PASSPORT')?'YES':''}</td><td align="center">${c.docs.includes('ID CARD')?'YES':''}</td><td align="center">${formatTimeDisplay(c.on)}<br>${formatTimeDisplay(c.off)}</td><td align="center">${c.total}</td><td align="center">${c.bp}</td><td align="center">${c.alcohol}</td><td align="center">${c.health}</td>`; b.appendChild(tr); }); 
-                for(let i=0; i<(7 - r.crew.length); i++) { let tr = document.createElement('tr'); tr.style.height='25px'; tr.innerHTML = `<td align="center">${r.crew.length+i+1}.</td>${'<td></td>'.repeat(10)}`; b.appendChild(tr); }
+                r.crew.forEach((c, idx) => { 
+                    const tr = document.createElement('tr'); 
+                    tr.innerHTML = `
+                        <td align="center">${idx+1}.</td>
+                        <td align="left">${c.name}</td>
+                        <td align="center">${c.rank}</td>
+                        <td align="center">${c.docs.includes('LICENSE')?'YES':''}</td>
+                        <td align="center">${c.docs.includes('PASSPORT')?'YES':''}</td>
+                        <td align="center">${c.docs.includes('ID CARD')?'YES':''}</td>
+                        <td align="center">${formatTimeDisplay(c.on)}</td>
+                        <td align="center">${formatTimeDisplay(c.off)}</td>
+                        <td align="center">${c.total}</td>
+                        <td align="center">${c.bp}</td>
+                        <td align="center">${c.alcohol}</td>
+                        <td align="center">${c.health}</td>`; 
+                    b.appendChild(tr); 
+                }); 
+                for(let i=0; i<(7 - r.crew.length); i++) { 
+                    let tr = document.createElement('tr'); 
+                    tr.style.height='22px'; 
+                    tr.innerHTML = `<td align="center">${r.crew.length+i+1}.</td>${'<td></td>'.repeat(11)}`; 
+                    b.appendChild(tr); 
+                }
             }
             window.print(); 
         }
