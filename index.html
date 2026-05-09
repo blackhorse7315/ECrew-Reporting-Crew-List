@@ -24,8 +24,13 @@
             #print-area { display: block !important; width: 100%; color: black; font-family: 'Times New Roman', serif; }
             table { width: 100%; border-collapse: collapse; }
             th, td { border: 1px solid black; padding: 4px 6px; font-size: 10pt; }
-            .no-border td { border: none !important; }
-            .title-main { font-size: 14pt; font-weight: bold; text-decoration: underline; margin: 10px 0; text-align: center; }
+            .no-border td { border: none !important; padding: 2px 0; }
+            .title-main { font-size: 14pt; font-weight: bold; text-decoration: underline; margin: 15px 0; text-align: center; }
+            .header-logo { text-align: center; margin-bottom: 20px; }
+            .header-logo img { height: 80px; width: auto; display: inline-block; }
+            .flight-info-table { width: auto !important; margin-bottom: 10px; margin-left: 0; }
+            .flight-info-table td:first-child { font-weight: bold; width: 150px; text-align: left; }
+            .flight-info-table td:last-child { text-align: left; }
         }
         #print-area { display: none; }
         .loader-spin { animation: spin 1s linear infinite; }
@@ -34,7 +39,7 @@
 </head>
 <body class="min-h-screen pb-10">
 
-    <!-- Sync Indicator (Latar Belakang) -->
+    <!-- Sync Indicator -->
     <div id="sync-loader" class="fixed top-20 right-8 z-[60] hidden">
         <div class="bg-white px-4 py-2 rounded-full shadow-xl border border-blue-100 flex items-center gap-3">
             <svg class="loader-spin h-4 w-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21 12a9 9 0 11-6.219-8.56"></path></svg>
@@ -67,7 +72,7 @@
                     <button onclick="showView('crew-mgmt')" class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all" title="Kelola Kru">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
                     </button>
-                    <button onclick="openNewForm()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full shadow-lg transition-all active:scale-95 font-bold text-sm">NEW</button>
+                    <button onclick="openNewForm()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full shadow-lg transition-all active:scale-95 font-bold text-sm uppercase">NEW</button>
                 </div>
             </div>
         </div>
@@ -88,7 +93,7 @@
         <div id="view-crew-mgmt" class="hidden animate-in slide-in-from-right-4">
             <div class="flex items-center justify-between mb-8"><button onclick="showView('dashboard')" class="text-slate-400 font-bold uppercase text-xs">← Dashboard</button><h2 class="text-2xl font-black uppercase">Crew & Signatures</h2></div>
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="lg:col-span-1"><div class="glass-card rounded-3xl p-6 sticky top-24"><h3 id="crew-form-title" class="text-xs font-black text-blue-600 uppercase mb-6 tracking-tighter">Add Personnel</h3><form id="crewMgmtForm" class="space-y-4"><input type="hidden" id="edit-crew-id"><div><label class="text-[9px] font-black text-slate-400 uppercase">Full Name</label><input type="text" id="crew-name-input" required class="w-full px-4 py-3 rounded-xl border border-slate-200 font-bold text-sm"></div><div><label class="text-[9px] font-black text-slate-400 uppercase">Signature (Tag/URL)</label><input type="text" id="crew-sign-input" required placeholder='Format: <img src="..." />' class="w-full px-4 py-3 rounded-xl border border-slate-200 text-[10px] font-medium"></div><button type="submit" class="w-full bg-blue-600 text-white font-black py-3 rounded-xl shadow-lg text-xs tracking-widest">SAVE & SYNC</button></form></div></div>
+                <div class="lg:col-span-1"><div class="glass-card rounded-3xl p-6 sticky top-24"><h3 id="crew-form-title" class="text-xs font-black text-blue-600 uppercase mb-6 tracking-tighter">Add Personnel</h3><form id="crewMgmtForm" class="space-y-4"><input type="hidden" id="edit-crew-id"><div><label class="text-[9px] font-black text-slate-400 uppercase">Full Name</label><input type="text" id="crew-name-input" required class="w-full px-4 py-3 rounded-xl border border-slate-200 font-bold text-sm"></div><div><label class="text-[9px] font-black text-slate-400 uppercase">Signature (Tag/URL)</label><input type="text" id="crew-sign-input" required placeholder='Format: <img src="..." />' class="w-full px-4 py-3 rounded-xl border border-slate-200 text-[10px] font-medium"></div><button type="submit" class="w-full bg-blue-600 text-white font-black py-3 rounded-xl shadow-lg text-xs tracking-widest uppercase">SAVE & SYNC</button></form></div></div>
                 <div class="lg:col-span-2 space-y-3" id="crew-list-container"></div>
             </div>
         </div>
@@ -133,13 +138,26 @@
         <div class="glass-card w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-[2rem] shadow-2xl relative flex flex-col animate-in zoom-in-95 duration-300">
             <div class="p-6 border-b flex justify-between items-center"><div class="flex items-center gap-3"><div class="bg-blue-600 w-1 h-8 rounded-full"></div><div><h2 class="text-lg font-black tracking-tight leading-none uppercase">Report Overview</h2><p id="detail-subtitle" class="text-[9px] text-slate-400 font-black uppercase tracking-[0.2em] mt-1"></p></div></div><button onclick="closeDetail()" class="text-slate-300 hover:text-slate-900 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M6 18L18 6M6 6l12 12" /></svg></button></div>
             <div id="detail-body" class="p-6 overflow-y-auto space-y-6 bg-slate-50/30"></div>
-            <div class="p-6 border-t flex gap-2"><button id="btn-edit" class="bg-blue-600 text-white px-6 py-2.5 rounded-xl font-black text-[10px] active:scale-95">EDIT</button><button id="btn-duplicate" class="bg-indigo-50 text-indigo-700 px-6 py-2.5 rounded-xl font-black text-[10px] active:scale-95">DUPLICATE</button><button id="btn-print" class="bg-emerald-600 text-white px-6 py-2.5 rounded-xl font-black text-[10px] active:scale-95">CETAK PDF</button><button id="btn-delete" class="ml-auto text-red-500 font-black text-[10px] px-4 active:scale-95 text-xs">DELETE</button></div>
+            <div class="p-6 border-t flex gap-2"><button id="btn-edit" class="bg-blue-600 text-white px-6 py-2.5 rounded-xl font-black text-[10px] active:scale-95 uppercase tracking-widest">EDIT</button><button id="btn-duplicate" class="bg-indigo-50 text-indigo-700 px-6 py-2.5 rounded-xl font-black text-[10px] active:scale-95 uppercase tracking-widest">DUPLICATE</button><button id="btn-print" class="bg-emerald-600 text-white px-6 py-2.5 rounded-xl font-black text-[10px] active:scale-95 uppercase tracking-widest">CETAK PDF</button><button id="btn-delete" class="ml-auto text-red-500 font-black text-[10px] px-4 active:scale-95 uppercase tracking-widest">DELETE</button></div>
         </div>
     </div>
 
     <!-- AREA CETAK -->
     <div id="print-area">
-        <table class="no-border" style="margin-bottom: 20px;"><tr><td width="50%"><table class="no-border header-info"><tr><td>ROUTE</td><td>: <span id="pr-route"></span></td></tr></table></td><td width="50%" align="right"><table class="no-border header-info"><tr><td>DATE</td><td>: <span id="pr-date"></span></td></tr><tr><td>ETD</td><td>: <span id="pr-etd"></span> UTC</td></tr><tr><td>AIRCRAFT TYPE</td><td>: <span id="pr-type"></span></td></tr></table></td></tr><tr><td><table class="no-border header-info"><tr><td>AIRCRAFT REG</td><td>: <span id="pr-reg"></span></td></tr></table></td><td></td></tr></table>
+        <!-- Logo Tengah Atas -->
+        <div class="header-logo">
+            <img src="https://lh3.googleusercontent.com/d/1WNcGjsZ9_Fp54xzOl01EYRqM6-wY5Zh7" alt="Logo" />
+        </div>
+
+        <!-- Kolom Info Rata Kiri -->
+        <table class="no-border flight-info-table">
+            <tr><td>ROUTE</td><td>: <span id="pr-route"></span></td></tr>
+            <tr><td>DATE</td><td>: <span id="pr-date"></span></td></tr>
+            <tr><td>ETD</td><td>: <span id="pr-etd"></span> UTC</td></tr>
+            <tr><td>AIRCRAFT TYPE</td><td>: <span id="pr-type"></span></td></tr>
+            <tr><td>AIRCRAFT REG</td><td>: <span id="pr-reg"></span></td></tr>
+        </table>
+
         <div align="center" class="title-main">REPORTING CREW LIST</div>
         <table><thead><tr style="background: #f0f0f0;"><th rowspan="2" width="30">NO</th><th rowspan="2">CREW NAME</th><th rowspan="2" width="60">RANK</th><th colspan="3">PERSONEL DOCUMENT</th><th colspan="2">REPORTING TIME (UTC)</th><th colspan="3">CHECK</th></tr><tr style="background: #f0f0f0;"><th>LICENSE</th><th>PASSPORT</th><th>ID CARD</th><th>ON/OFF</th><th>TOTAL</th><th>BP</th><th>ACHL</th><th>REMARKS</th></tr></thead><tbody id="pr-table-body"></tbody></table>
         <div style="margin-top: 20px; font-size: 10pt;"><strong>NOTE:</strong><br><div id="pr-note" style="min-height: 60px; border: 1px solid #ccc; padding: 10px; margin-top: 5px;"></div></div>
@@ -151,7 +169,7 @@
 
     <script>
         // -- CONFIGURATION --
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx-SvgSpJ47H_vXw81bJ_yD__PRpiyqy5W22-ZGcSXlchi3vCK15qUZ9wvKOqGLk58C9A/exec"; 
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwsJ4dYRA7BLaP5F_RHVPkl8aJliSD8J_2n9qCpTZ6HsKrdM3PUIP3xn3_caHu_GdzbSQ/exec"; 
         
         // -- STATE --
         const acMap = { 'PK-TWY':'GIV', 'PK-TWX':'B300', 'PK-TWW':'C200', 'PK-TWV':'B412', 'PK-TWZ':'AW109' };
@@ -164,6 +182,7 @@
         const formatIDDate = (s) => { 
             if(!s) return ''; 
             const d = new Date(s); 
+            if(isNaN(d.getTime())) return s;
             const m = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember']; 
             return `${d.getDate()} ${m[d.getMonth()]} ${d.getFullYear()}`; 
         };
@@ -194,51 +213,70 @@
             if (clockEl) clockEl.innerText = now.toISOString().substr(11, 8) + ' UTC'; 
             if (dateEl) dateEl.innerText = formatIDDate(now);
         };
-        setInterval(tick, 1000); tick();
+        setInterval(tick, 1000); 
 
         // -- SYNC LOGIC --
         async function syncData(silent = false) {
-            if (isSyncing || !SCRIPT_URL || SCRIPT_URL === "" || SCRIPT_URL.includes("URL_GOOGLE")) return;
+            if (isSyncing || !SCRIPT_URL || SCRIPT_URL.includes("URL_GOOGLE")) {
+                if(!silent) showToast("API URL Belum Diatur", "error");
+                return;
+            }
             isSyncing = true;
-            if (!silent) document.getElementById('sync-loader').classList.remove('hidden');
+            const loader = document.getElementById('sync-loader');
+            if (!silent && loader) loader.classList.remove('hidden');
+            
             try {
-                const response = await fetch(SCRIPT_URL);
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' },
+                    cache: 'no-cache'
+                });
+                
+                if (!response.ok) throw new Error("Server response not OK");
+                
                 const data = await response.json();
                 reports = (data.reports || []).sort((a,b) => new Date(b.date) - new Date(a.date));
                 crewMaster = data.crews || {};
+                
                 renderDashboard();
                 syncPrepareBy();
+                
                 if(!document.getElementById('view-crew-mgmt').classList.contains('hidden')) renderCrewMgmtList();
                 if (!silent) showToast("DATABASE SYNCED");
             } catch (error) {
                 console.error("Sync error:", error);
-                if (!silent) showToast("SYNC FAILED", "error");
+                if (!silent) showToast("SYNC FAILED: Periksa Deployment GAS", "error");
             } finally {
                 isSyncing = false;
-                document.getElementById('sync-loader').classList.add('hidden');
+                if(loader) loader.classList.add('hidden');
             }
         }
 
         async function apiPost(action, payload) {
-            if (!SCRIPT_URL || SCRIPT_URL === "" || SCRIPT_URL.includes("URL_GOOGLE")) return true;
-            document.getElementById('sync-loader').classList.remove('hidden');
+            if (!SCRIPT_URL || SCRIPT_URL.includes("URL_GOOGLE")) return true;
+            const loader = document.getElementById('sync-loader');
+            if(loader) loader.classList.remove('hidden');
             try {
                 await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    mode: 'no-cors',
+                    mode: 'no-cors', 
                     cache: 'no-cache',
                     body: JSON.stringify({ action, ...payload })
                 });
                 return true;
-            } catch (e) { return false; }
-            finally { document.getElementById('sync-loader').classList.add('hidden'); }
+            } catch (e) { 
+                console.error("Post error:", e);
+                return false; 
+            }
+            finally { if(loader) loader.classList.add('hidden'); }
         }
 
         // -- NAVIGATION --
         function showView(v) {
-            document.getElementById('view-dashboard').classList.add('hidden');
-            document.getElementById('view-form').classList.add('hidden');
-            document.getElementById('view-crew-mgmt').classList.add('hidden');
+            ['dashboard', 'form', 'crew-mgmt'].forEach(id => {
+                const el = document.getElementById(`view-${id}`);
+                if(el) el.classList.add('hidden');
+            });
             const target = document.getElementById(`view-${v}`);
             if (target) target.classList.remove('hidden');
             if(v === 'dashboard') renderDashboard();
@@ -254,7 +292,7 @@
             Object.entries(crewMaster).forEach(([n, url]) => {
                 const card = document.createElement('div');
                 card.className = "glass-card rounded-2xl p-4 flex items-center justify-between group";
-                card.innerHTML = `<div class="flex items-center gap-4"><div class="w-12 h-10 bg-white rounded border border-slate-100 p-1"><img src="${url}" class="h-full w-full object-contain"></div><div><p class="font-black text-sm">${n}</p><p class="text-[8px] text-slate-400 truncate max-w-[150px]">${url}</p></div></div><div class="flex gap-2"><button onclick="editCrew('${n}','${url}')" class="text-blue-600 p-2">✎</button><button onclick="deleteCrew('${n}')" class="text-red-500 p-2">✕</button></div>`;
+                card.innerHTML = `<div class="flex items-center gap-4"><div class="w-12 h-10 bg-white rounded border border-slate-100 p-1"><img src="${url}" class="h-full w-full object-contain"></div><div><p class="font-black text-sm uppercase">${n}</p><p class="text-[8px] text-slate-400 truncate max-w-[150px]">${url}</p></div></div><div class="flex gap-2"><button onclick="editCrew('${n}','${url}')" class="text-blue-600 p-2 hover:bg-blue-50 rounded-lg">✎</button><button onclick="deleteCrew('${n}')" class="text-red-500 p-2 hover:bg-red-50 rounded-lg">✕</button></div>`;
                 c.appendChild(card);
             });
         }
@@ -373,14 +411,14 @@
             document.getElementById('stat-total').innerText = reports.length;
             document.getElementById('stat-regs').innerText = [...new Set(reports.map(r => r.ac_reg))].length;
             document.getElementById('stat-latest').innerText = reports.length > 0 ? reports[0].route : '-';
-            if (reports.length === 0) { c.innerHTML = `<div class="py-20 text-center text-slate-300 font-bold uppercase text-xs tracking-widest">No Database Records Found</div>`; return; }
+            if (reports.length === 0) { c.innerHTML = `<div class="py-20 text-center text-slate-300 font-bold uppercase text-xs tracking-widest uppercase">No Records Found</div>`; return; }
             const groups = reports.reduce((acc, r) => { const y = new Date(r.date).getFullYear(); if (!acc[y]) acc[y] = {}; if (!acc[y][r.ac_reg]) acc[y][r.ac_reg] = []; acc[y][r.ac_reg].push(r); return acc; }, {});
             c.innerHTML = '';
             Object.keys(groups).sort((a,b) => b-a).forEach(y => {
                 let regs = '';
                 Object.keys(groups[y]).sort().forEach(reg => {
                     const list = groups[y][reg];
-                    regs += `<details class="group border-t border-slate-100"><summary class="flex justify-between p-5 cursor-pointer hover:bg-slate-50 list-none"><div class="flex items-center gap-4"><span class="bg-blue-600 text-white px-3 py-1 rounded-full text-[9px] font-black">${reg}</span><span class="text-slate-400 text-xs font-black">${acMap[reg]||''}</span></div><span class="text-[10px] font-black text-slate-400 uppercase">${list.length} Logs</span></summary><div class="px-4 pb-4"><div class="rounded-2xl border border-slate-100 bg-white"><table class="w-full text-left text-xs"><thead><tr class="bg-slate-50 text-slate-400 text-[8px] uppercase font-black"><th class="px-5 py-3">DATE</th><th class="px-5 py-3">ROUTE</th><th class="px-5 py-3">PREPARED BY</th></tr></thead><tbody>${list.map(r => `<tr onclick="viewDetail('${r.id}')" class="border-b last:border-0 border-slate-50 hover:bg-blue-50/50 cursor-pointer transition-all"><td class="px-5 py-3 font-bold text-slate-700">${formatIDDate(r.date)}</td><td class="px-5 py-3 font-black text-blue-600">${r.route}</td><td class="px-5 py-3 text-slate-400 italic">${r.prepared_by}</td></tr>`).join('')}</tbody></table></div></div></details>`;
+                    regs += `<details class="group border-t border-slate-100"><summary class="flex justify-between p-5 cursor-pointer hover:bg-slate-50 list-none"><div class="flex items-center gap-4"><span class="bg-blue-600 text-white px-3 py-1 rounded-full text-[9px] font-black">${reg}</span><span class="text-slate-400 text-xs font-black uppercase">${acMap[reg]||''}</span></div><span class="text-[10px] font-black text-slate-400 uppercase">${list.length} Logs</span></summary><div class="px-4 pb-4"><div class="rounded-2xl border border-slate-100 bg-white"><table class="w-full text-left text-xs"><thead><tr class="bg-slate-50 text-slate-400 text-[8px] uppercase font-black"><th class="px-5 py-3">DATE</th><th class="px-5 py-3">ROUTE</th><th class="px-5 py-3">PREPARED BY</th></tr></thead><tbody>${list.map(r => `<tr onclick="viewDetail('${r.id}')" class="border-b last:border-0 border-slate-50 hover:bg-blue-50/50 cursor-pointer transition-all"><td class="px-5 py-3 font-bold text-slate-700">${formatIDDate(r.date)}</td><td class="px-5 py-3 font-black text-blue-600">${r.route}</td><td class="px-5 py-3 text-slate-400 italic">${r.prepared_by}</td></tr>`).join('')}</tbody></table></div></div></details>`;
                 });
                 const yDiv = document.createElement('div'); yDiv.className = "glass-card rounded-3xl overflow-hidden mb-6 shadow-sm";
                 yDiv.innerHTML = `<div class="bg-slate-900 p-5 text-white font-black tracking-widest text-lg">${y}</div>${regs}`;
@@ -392,10 +430,10 @@
             const r = reports.find(x => x.id === id); if(!r) return;
             const subtitle = document.getElementById('detail-subtitle'); if(subtitle) subtitle.innerText = `${r.ac_reg} • ${r.route}`;
             const body = document.getElementById('detail-body');
-            if(body) body.innerHTML = `<div class="grid grid-cols-2 md:grid-cols-4 gap-4">${[{l:'Date',v:formatIDDate(r.date)},{l:'Aircraft',v:r.ac_reg+' ('+r.ac_type+')'},{l:'Route',v:r.route},{l:'ETD',v:formatTimeDisplay(r.etd)+' UTC'}].map(x=>`<div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm"><p class="text-[8px] text-slate-400 font-black uppercase mb-1">${x.l}</p><p class="font-bold text-slate-800 text-sm">${x.v}</p></div>`).join('')}</div><div class="space-y-2"><p class="text-[8px] font-black text-slate-400 uppercase tracking-widest">Crew Details</p>${r.crew.map(c=>`<div class="bg-white p-4 rounded-2xl border border-slate-100 flex justify-between items-center shadow-sm"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center font-black text-blue-600 text-[9px]">${c.rank}</div><div><p class="font-black text-sm">${c.name}</p><p class="text-[9px] text-slate-400 uppercase">Time: ${formatTimeDisplay(c.on)}-${formatTimeDisplay(c.off)} (${c.total})</p></div></div><div class="text-right"><p class="text-[10px] font-black ${c.health==='FIT'?'text-emerald-500':'text-red-500'} tracking-wider">${c.health}</p><p class="text-[8px] text-slate-400 font-black">BP: ${c.bp||'-'} | Alc: ${c.alcohol||'0'}</p></div></div>`).join('')}</div><div class="bg-amber-50/50 p-6 rounded-2xl border border-amber-100/30 font-medium text-slate-600 text-xs italic">${r.note||'-'}</div>`;
+            if(body) body.innerHTML = `<div class="grid grid-cols-2 md:grid-cols-4 gap-4">${[{l:'Date',v:formatIDDate(r.date)},{l:'Aircraft',v:r.ac_reg+' ('+r.ac_type+')'},{l:'Route',v:r.route},{l:'ETD',v:formatTimeDisplay(r.etd)+' UTC'}].map(x=>`<div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm"><p class="text-[8px] text-slate-400 font-black uppercase mb-1 tracking-widest">${x.l}</p><p class="font-bold text-slate-800 text-sm">${x.v}</p></div>`).join('')}</div><div class="space-y-2"><p class="text-[8px] font-black text-slate-400 uppercase tracking-widest">Crew Details</p>${r.crew.map(c=>`<div class="bg-white p-4 rounded-2xl border border-slate-100 flex justify-between items-center shadow-sm"><div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center font-black text-blue-600 text-[9px]">${c.rank}</div><div><p class="font-black text-sm uppercase">${c.name}</p><p class="text-[9px] text-slate-400 uppercase tracking-tighter">Time: ${formatTimeDisplay(c.on)}-${formatTimeDisplay(c.off)} (${c.total})</p></div></div><div class="text-right"><p class="text-[10px] font-black ${c.health==='FIT'?'text-emerald-500':'text-red-500'} tracking-wider uppercase">${c.health}</p><p class="text-[8px] text-slate-400 font-black">BP: ${c.bp||'-'} | Alc: ${c.alcohol||'0'}</p></div></div>`).join('')}</div><div class="bg-amber-50/50 p-6 rounded-2xl border border-amber-100/30 font-medium text-slate-600 text-xs italic">${r.note||'-'}</div>`;
             document.getElementById('btn-edit').onclick = () => { closeDetail(); startEdit(id); };
             document.getElementById('btn-duplicate').onclick = () => { closeDetail(); startEdit(id, true); };
-            document.getElementById('btn-delete').onclick = async () => { if(confirm('Hapus laporan ini dari Database?')) { await apiPost('deleteReport', {id}); syncData(false); closeDetail(); } };
+            document.getElementById('btn-delete').onclick = async () => { if(confirm('Hapus laporan ini dari Database?')) { await apiPost('deleteReport', {id}); syncData(true); closeDetail(); } };
             document.getElementById('btn-print').onclick = () => generatePDF(id);
             const modal = document.getElementById('modal-detail'); if(modal) modal.classList.remove('hidden');
         }
@@ -405,14 +443,11 @@
             const r = reports.find(x => x.id === id); if(!r) return; 
             resetForm(); 
             const f = document.getElementById('reportingForm'); 
-            f.route.value = r.route; 
-            
-            // Perbaikan Tanggal: Pastikan nilai input sesuai format YYYY-MM-DD
             const dateVal = formatDateForInput(r.date);
+            f.route.value = r.route; 
             f.date.value = dateVal;
             const label = document.getElementById('formattedDateLabel');
             if(label) label.innerText = formatIDDate(dateVal);
-            
             f.etd.value = formatTimeDisplay(r.etd); 
             f.ac_reg.value = r.ac_reg; 
             f.note.value = r.note; 
@@ -426,7 +461,13 @@
 
         function generatePDF(id) { 
             const r = reports.find(x => x.id === id); if(!r) return; 
-            document.getElementById('pr-route').innerText = r.route; document.getElementById('pr-date').innerText = formatIDDate(r.date); document.getElementById('pr-etd').innerText = formatTimeDisplay(r.etd); document.getElementById('pr-type').innerText = r.ac_type; document.getElementById('pr-reg').innerText = r.ac_reg; document.getElementById('pr-note').innerText = r.note || '-'; document.getElementById('pr-sign-name').innerText = r.prepared_by; 
+            document.getElementById('pr-route').innerText = r.route; 
+            document.getElementById('pr-date').innerText = formatIDDate(r.date); 
+            document.getElementById('pr-etd').innerText = formatTimeDisplay(r.etd); 
+            document.getElementById('pr-type').innerText = r.ac_type; 
+            document.getElementById('pr-reg').innerText = r.ac_reg; 
+            document.getElementById('pr-note').innerText = r.note || '-'; 
+            document.getElementById('pr-sign-name').innerText = r.prepared_by; 
             const pI = document.getElementById('pr-sign-img'); if (crewMaster[r.prepared_by]) { pI.src = crewMaster[r.prepared_by]; pI.style.display = 'block'; } else { pI.style.display = 'none'; } 
             const b = document.getElementById('pr-table-body'); 
             if(b) {
@@ -437,7 +478,19 @@
             window.print(); 
         }
 
-        function showToast(m, t='s') { const e = document.getElementById('toast'); if(!e) return; e.innerText = m; e.classList.remove('hidden'); e.style.opacity = '1'; setTimeout(() => { e.style.opacity = '0'; setTimeout(()=>e.classList.add('hidden'),300); }, 3000); }
+        function showToast(m, t='s') { 
+            const e = document.getElementById('toast'); 
+            if(!e) return; 
+            e.innerText = m; 
+            e.classList.remove('hidden'); 
+            e.classList.toggle('bg-red-600', t === 'error');
+            e.classList.toggle('bg-slate-900', t === 's');
+            e.style.opacity = '1'; 
+            setTimeout(() => { 
+                e.style.opacity = '0'; 
+                setTimeout(()=>e.classList.add('hidden'),300); 
+            }, 3000); 
+        }
 
         document.getElementById('reportingForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -452,11 +505,18 @@
             }
             const obj = { id, route: f.route.value, date: f.date.value, etd: f.etd.value, ac_reg: f.ac_reg.value, ac_type: document.getElementById('acType').value, note: f.note.value, prepared_by: f.prepared_by.value, crew: crewArr };
             showToast("SAVING TO CLOUD...");
-            await apiPost('saveReport', { payload: obj });
-            showView('dashboard'); syncData(true);
+            const success = await apiPost('saveReport', { payload: obj });
+            if(success) {
+                showView('dashboard'); syncData(true);
+            } else {
+                showToast("GAGAL MENYIMPAN: Periksa Koneksi", "error");
+            }
         });
 
-        window.onload = () => { syncData(); };
+        window.onload = () => { 
+            tick(); 
+            syncData(); 
+        };
     </script>
     <datalist id="crew-names"></datalist>
 </body>
