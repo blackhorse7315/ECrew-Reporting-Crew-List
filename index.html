@@ -563,6 +563,14 @@
 
         function generatePDF(id) { 
             const r = reports.find(x => x.id === id); if(!r) return; 
+
+            // Atur Judul Halaman sebagai Nama File PDF Default
+            const d = new Date(r.date);
+            const monthsShort = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+            const formattedDateFile = `${d.getDate()} ${monthsShort[d.getMonth()]} ${d.getFullYear().toString().slice(-2)}`;
+            const originalTitle = document.title;
+            document.title = `Reporting Crew List ${r.ac_reg} ${formattedDateFile}`;
+
             document.getElementById('pr-route').innerText = r.route; 
             document.getElementById('pr-date').innerText = formatIDDate(r.date); 
             document.getElementById('pr-etd').innerText = formatTimeDisplay(r.etd); 
@@ -610,6 +618,9 @@
                 }
             }
             window.print(); 
+
+            // Kembalikan Judul Halaman setelah print
+            setTimeout(() => { document.title = originalTitle; }, 1000);
         }
 
         function showToast(m, t='s') { 
