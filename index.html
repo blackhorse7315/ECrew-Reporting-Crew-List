@@ -33,79 +33,82 @@
                 padding: 0;
             }
             
+            /* Logo diperbesar sesuai permintaan (dari 50px ke 70px) */
             .header-logo { 
                 text-align: center; 
-                margin-top: -8px; 
-                margin-bottom: 2px; 
+                margin-top: -5px; 
+                margin-bottom: 5px; 
             }
-            .header-logo img { height: 50px; width: auto; display: inline-block; }
+            .header-logo img { height: 70px; width: auto; display: inline-block; }
 
             .flight-info-table { width: auto !important; margin-bottom: 2px; margin-left: 0; }
             .flight-info-table td { padding: 0px 4px !important; }
             .flight-info-table td:first-child { font-weight: bold; width: 130px; }
             
-            /* Table layout auto agar kolom nama bisa memanjang sesuai teks */
+            /* Table layout auto agar kolom bisa menyesuaikan */
             table { width: 100%; border-collapse: collapse; table-layout: auto !important; margin-top: 2px; }
             th, td { 
                 border: 1px solid black; 
-                padding: 3px 5px; 
+                padding: 4px 5px; 
                 font-size: 11pt !important; 
                 text-align: center; 
                 overflow: hidden;
+                white-space: nowrap; /* Mencegah teks judul kolom pindah baris agar kolom menyusut maksimal */
             }
             
-            /* Judul Utama Kuning (Sesuai Contoh Gambar) */
+            /* Judul Utama Kuning */
             .print-main-title {
                 background-color: #ffff00 !important;
                 font-weight: bold;
                 text-transform: uppercase;
-                padding: 4px !important;
+                padding: 6px !important;
                 font-size: 11pt !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
 
-            /* Header Abu-abu Muda (Sesuai Contoh Gambar) */
+            /* Header Abu-abu Muda */
             .print-header-gray {
-                background-color: #d1d5db !important; /* Gray-300 untuk kontras yang pas */
+                background-color: #d1d5db !important; 
                 font-weight: bold;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
             
-            /* Kolom Nama Kru: Nowrap (Satu baris otomatis lebar) */
+            /* Kolom Nama Kru: Melebar secara otomatis mengambil sisa ruang */
             .col-crew-name { 
-                white-space: nowrap !important; 
                 text-align: left !important; 
-                width: 1% !important; /* Memaksa kolom menyusut ke konten terkecil tapi terhalang nowrap */
-                min-width: 200px;
+                width: 100% !important; /* Memaksa kolom ini mengambil sisa lebar yang ada */
+                white-space: normal !important; /* Nama panjang boleh pindah baris jika memang sisa ruang habis */
+            }
+
+            /* Memaksa kolom lain untuk menyusut seminimal mungkin berdasarkan konten judulnya */
+            .col-shrink {
+                width: 1% !important;
+                white-space: nowrap !important;
             }
             
             .no-border td { border: none !important; padding: 1px 0; text-align: left; font-size: 11pt !important; }
             
-            .col-no { width: 30px; }
-            .col-rank { width: 50px; }
-            .col-on-off { width: 45px; }
-
             .note-container { 
-                margin-top: 5px; 
+                margin-top: 10px; 
                 display: flex;
                 justify-content: space-between;
                 align-items: flex-start;
             }
             .note-box { 
-                width: 320px; 
+                width: 350px; 
                 font-size: 11pt;
             }
             #pr-note { 
-                min-height: 30px; 
+                min-height: 35px; 
                 border: 1px solid #000; 
                 padding: 4px; 
                 margin-top: 2px;
                 font-style: italic;
             }
             .signature-area { text-align: center; width: 250px; font-size: 11pt; }
-            .signature-img-box { height: 45px; display: flex; align-items: center; justify-content: center; margin: 2px 0; }
+            .signature-img-box { height: 55px; display: flex; align-items: center; justify-content: center; margin: 3px 0; }
             .signature-img-box img { max-height: 100%; max-width: 100%; }
         }
 
@@ -244,23 +247,23 @@
                 </tr>
                 <!-- Header Kolom Abu-abu Muda -->
                 <tr class="print-header-gray">
-                    <th rowspan="2" class="col-no">NO</th>
+                    <th rowspan="2" class="col-shrink">NO</th>
                     <th rowspan="2" class="col-crew-name">CREW NAME</th>
-                    <th rowspan="2" class="col-rank">RANK</th>
-                    <th colspan="3">PERSONEL DOCUMENT</th>
-                    <th colspan="3">REPORTING TIME (UTC)</th>
-                    <th colspan="2">CHECK</th>
-                    <th rowspan="2">REMARKS</th>
+                    <th rowspan="2" class="col-shrink">RANK</th>
+                    <th colspan="3" class="col-shrink">PERSONEL DOCUMENT</th>
+                    <th colspan="3" class="col-shrink">REPORTING TIME (UTC)</th>
+                    <th colspan="2" class="col-shrink">CHECK</th>
+                    <th rowspan="2" class="col-shrink">REMARKS</th>
                 </tr>
                 <tr class="print-header-gray">
-                    <th width="45">LICENSE</th>
-                    <th width="45">PASSPORT</th>
-                    <th width="45">ID CARD</th>
-                    <th class="col-on-off">ON</th>
-                    <th class="col-on-off">OFF</th>
-                    <th class="col-on-off">TOTAL</th>
-                    <th width="55">BLOOD PRESS</th>
-                    <th width="35">ACHL</th>
+                    <th class="col-shrink">LICENSE</th>
+                    <th class="col-shrink">PASSPORT</th>
+                    <th class="col-shrink">ID CARD</th>
+                    <th class="col-shrink">ON</th>
+                    <th class="col-shrink">OFF</th>
+                    <th class="col-shrink">TOTAL</th>
+                    <th class="col-shrink">BLOOD PRESS</th>
+                    <th class="col-shrink">ACHL</th>
                 </tr>
             </thead>
             <tbody id="pr-table-body"></tbody>
@@ -593,7 +596,7 @@
                 for(let i=0; i<(7 - r.crew.length); i++) { 
                     let tr = document.createElement('tr'); 
                     tr.style.height='22px'; 
-                    tr.innerHTML = `<td align="center">${r.crew.length+i+1}.</td>${'<td class="col-crew-name"></td>'} ${'<td></td>'.repeat(10)}`; 
+                    tr.innerHTML = `<td align="center">${r.crew.length+i+1}.</td><td class="col-crew-name"></td> ${'<td></td>'.repeat(10)}`; 
                     b.appendChild(tr); 
                 }
             }
