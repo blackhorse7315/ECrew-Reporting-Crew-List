@@ -32,41 +32,56 @@
                 margin: 0;
                 padding: 0;
             }
-            table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-            th, td { border: 1px solid black; padding: 3px 4px; font-size: 8.5pt; word-wrap: break-word; text-align: center; }
+            /* Table layout auto agar kolom bisa menyesuaikan konten */
+            table { width: 100%; border-collapse: collapse; table-layout: auto !important; }
+            th, td { 
+                border: 1px solid black; 
+                padding: 4px 6px; 
+                font-size: 11pt !important; /* Ukuran font 11pt sesuai permintaan */
+                text-align: center; 
+                word-wrap: normal !important;
+                overflow: hidden;
+            }
             
-            .no-border td { border: none !important; padding: 1px 0; text-align: left; }
-            .title-main { font-size: 13pt; font-weight: bold; text-decoration: underline; margin: 5px 0; text-align: center; }
-            .header-logo { text-align: center; margin-bottom: 5px; }
-            .header-logo img { height: 60px; width: auto; display: inline-block; }
+            /* Kolom Nama Kru: Tidak boleh bungkus baris (nowrap) dan rata kiri */
+            .col-crew-name { 
+                white-space: nowrap !important; 
+                text-align: left !important; 
+                width: auto !important;
+            }
             
-            .flight-info-table { width: auto !important; margin-bottom: 5px; margin-left: 0; font-size: 8.5pt; }
-            .flight-info-table td:first-child { font-weight: bold; width: 110px; }
+            .no-border td { border: none !important; padding: 2px 0; text-align: left; font-size: 11pt !important; }
+            .title-main { font-size: 14pt; font-weight: bold; text-decoration: underline; margin: 10px 0; text-align: center; }
+            .header-logo { text-align: center; margin-bottom: 10px; }
+            .header-logo img { height: 70px; width: auto; display: inline-block; }
             
-            /* Penyesuaian Kolom Waktu */
-            .col-on-off { width: 45px; }
-            .col-rank { width: 50px; }
-            .col-no { width: 25px; }
+            .flight-info-table { width: auto !important; margin-bottom: 10px; margin-left: 0; }
+            .flight-info-table td:first-child { font-weight: bold; width: 130px; }
+            
+            /* Penyesuaian Kolom Kecil untuk memberikan ruang bagi kolom nama */
+            .col-no { width: 35px; }
+            .col-rank { width: 60px; }
+            .col-on-off { width: 55px; }
 
             .note-container { 
-                margin-top: 10px; 
+                margin-top: 15px; 
                 display: flex;
                 justify-content: space-between;
                 align-items: flex-start;
             }
             .note-box { 
-                width: 300px; /* Lebar dibatasi agar sejajar kira-kira kolom dokumen */
-                font-size: 8.5pt;
+                width: 320px; 
+                font-size: 11pt;
             }
             #pr-note { 
-                min-height: 40px; 
+                min-height: 45px; 
                 border: 1px solid #000; 
                 padding: 5px; 
-                margin-top: 2px;
+                margin-top: 5px;
                 font-style: italic;
             }
-            .signature-area { text-align: center; width: 200px; }
-            .signature-img-box { height: 50px; display: flex; align-items: center; justify-content: center; margin: 2px 0; }
+            .signature-area { text-align: center; width: 250px; font-size: 11pt; }
+            .signature-img-box { height: 60px; display: flex; align-items: center; justify-content: center; margin: 5px 0; }
             .signature-img-box img { max-height: 100%; max-width: 100%; }
         }
 
@@ -202,22 +217,22 @@
             <thead>
                 <tr style="background: #f0f0f0;">
                     <th rowspan="2" class="col-no">NO</th>
-                    <th rowspan="2">CREW NAME</th>
+                    <th rowspan="2" class="col-crew-name">CREW NAME</th>
                     <th rowspan="2" class="col-rank">RANK</th>
                     <th colspan="3">PERSONEL DOCUMENT</th>
                     <th colspan="3">REPORTING TIME (UTC)</th>
                     <th colspan="3">CHECK</th>
                 </tr>
                 <tr style="background: #f0f0f0;">
-                    <th width="45">LICENSE</th>
-                    <th width="45">PASSPORT</th>
-                    <th width="45">ID CARD</th>
+                    <th width="80">LICENSE</th>
+                    <th width="80">PASSPORT</th>
+                    <th width="80">ID CARD</th>
                     <th class="col-on-off">ON</th>
                     <th class="col-on-off">OFF</th>
                     <th class="col-on-off">TOTAL</th>
-                    <th width="55">BP</th>
-                    <th width="35">ACHL</th>
-                    <th width="50">REMARKS</th>
+                    <th width="80">BP</th>
+                    <th width="60">ACHL</th>
+                    <th width="80">REMARKS</th>
                 </tr>
             </thead>
             <tbody id="pr-table-body"></tbody>
@@ -229,7 +244,7 @@
                 <div id="pr-note"></div>
             </div>
             <div class="signature-area">
-                <p style="font-size: 8pt; margin-bottom: 2px;">PREPARED BY FLOPS<br>OR PILOT ON DUTY</p>
+                <p style="margin-bottom: 2px;">PREPARED BY FLOPS<br>OR PILOT ON DUTY</p>
                 <div class="signature-img-box">
                     <img id="pr-sign-img" src="" alt="TTD">
                 </div>
@@ -534,7 +549,7 @@
                     const tr = document.createElement('tr'); 
                     tr.innerHTML = `
                         <td align="center">${idx+1}.</td>
-                        <td align="left">${c.name}</td>
+                        <td align="left" class="col-crew-name">${c.name}</td>
                         <td align="center">${c.rank}</td>
                         <td align="center">${c.docs.includes('LICENSE')?'YES':''}</td>
                         <td align="center">${c.docs.includes('PASSPORT')?'YES':''}</td>
@@ -550,7 +565,7 @@
                 for(let i=0; i<(7 - r.crew.length); i++) { 
                     let tr = document.createElement('tr'); 
                     tr.style.height='22px'; 
-                    tr.innerHTML = `<td align="center">${r.crew.length+i+1}.</td>${'<td></td>'.repeat(11)}`; 
+                    tr.innerHTML = `<td align="center">${r.crew.length+i+1}.</td>${'<td class="col-crew-name"></td>'} ${'<td></td>'.repeat(10)}`; 
                     b.appendChild(tr); 
                 }
             }
