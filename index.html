@@ -109,6 +109,9 @@
             /* Memperbesar area tanda tangan di PDF */
             .signature-img-box { height: 80px; display: flex; align-items: center; justify-content: center; margin: 3px 0; }
             .signature-img-box img { max-height: 100%; max-width: 100%; object-fit: contain; }
+            
+            /* Footer Nomor Form */
+            .pr-footer-number { margin-top: 10px; font-size: 8pt; font-weight: bold; text-align: left; color: #555; }
         }
 
         #print-area { display: none; }
@@ -175,7 +178,36 @@
         <div id="view-crew-mgmt" class="hidden animate-in slide-in-from-right-4">
             <div class="flex items-center justify-between mb-8"><button onclick="showView('dashboard')" class="text-slate-400 font-bold uppercase text-xs">← Dashboard</button><h2 class="text-2xl font-black uppercase">Crew & Signatures</h2></div>
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="lg:col-span-1"><div class="glass-card rounded-3xl p-6 sticky top-24"><h3 id="crew-form-title" class="text-xs font-black text-blue-600 uppercase mb-6 tracking-tighter">Add Personnel</h3><form id="crewMgmtForm" class="space-y-4"><input type="hidden" id="edit-crew-id"><div><label class="text-[9px] font-black text-slate-400 uppercase">Full Name</label><input type="text" id="crew-name-input" required class="w-full px-4 py-3 rounded-xl border border-slate-200 font-bold text-sm"></div><div><label class="text-[9px] font-black text-slate-400 uppercase">Signature (Tag/URL)</label><input type="text" id="crew-sign-input" required placeholder='Format: <img src="..." />' class="w-full px-4 py-3 rounded-xl border border-slate-200 text-[10px] font-medium"></div><button type="submit" class="w-full bg-blue-600 text-white font-black py-3 rounded-xl shadow-lg text-xs tracking-widest uppercase">SAVE & SYNC</button></form></div></div>
+                <!-- Kolom Input (Kiri) -->
+                <div class="lg:col-span-1 space-y-6">
+                    <!-- Form Tambah/Ubah Nomor Form PDF -->
+                    <div class="glass-card rounded-3xl p-6">
+                        <h3 class="text-xs font-black text-slate-600 uppercase mb-4 tracking-tighter">PDF Document Form No.</h3>
+                        <div class="flex gap-2">
+                            <input type="text" id="form-number-input" placeholder="e.g. FOM/123/Rev.0" class="w-full px-4 py-2 rounded-xl border border-slate-200 font-bold text-sm outline-none focus:border-blue-500">
+                            <button type="button" onclick="saveFormNumber()" class="bg-slate-900 text-white font-black px-4 py-2 rounded-xl text-xs uppercase hover:bg-slate-800 transition-colors">SAVE</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Form Tambah Personil -->
+                    <div class="glass-card rounded-3xl p-6 sticky top-24">
+                        <h3 id="crew-form-title" class="text-xs font-black text-blue-600 uppercase mb-6 tracking-tighter">Add Personnel</h3>
+                        <form id="crewMgmtForm" class="space-y-4">
+                            <input type="hidden" id="edit-crew-id">
+                            <div>
+                                <label class="text-[9px] font-black text-slate-400 uppercase">Full Name</label>
+                                <input type="text" id="crew-name-input" required class="w-full px-4 py-3 rounded-xl border border-slate-200 font-bold text-sm">
+                            </div>
+                            <div>
+                                <label class="text-[9px] font-black text-slate-400 uppercase">Signature (Tag/URL)</label>
+                                <input type="text" id="crew-sign-input" required placeholder='Format: <img src="..." />' class="w-full px-4 py-3 rounded-xl border border-slate-200 text-[10px] font-medium">
+                            </div>
+                            <button type="submit" class="w-full bg-blue-600 text-white font-black py-3 rounded-xl shadow-lg text-xs tracking-widest uppercase">SAVE & SYNC</button>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Daftar Kru (Kanan) -->
                 <div class="lg:col-span-2 space-y-3" id="crew-list-container"></div>
             </div>
         </div>
@@ -281,6 +313,8 @@
                 <p id="pr-sign-name" style="font-weight: bold; text-decoration: underline; margin-top: 2px;"></p>
             </div>
         </div>
+        <!-- Foother Nomor Form Kiri Bawah -->
+        <div id="pr-form-number" class="pr-footer-number"></div>
     </div>
 
     <!-- Message Toasts -->
@@ -352,6 +386,11 @@
                 const data = await response.json();
                 reports = (data.reports || []).sort((a,b) => new Date(b.date) - new Date(a.date));
                 crewMaster = data.crews || {};
+                
+                // Isi input Form Number otomatis bila datanya ada
+                const formNumEl = document.getElementById('form-number-input');
+                if (formNumEl) formNumEl.value = crewMaster['__FORM_NUMBER__'] || '';
+
                 renderDashboard();
                 syncPrepareBy();
                 if(!document.getElementById('view-crew-mgmt').classList.contains('hidden')) renderCrewMgmtList();
@@ -394,12 +433,24 @@
             window.scrollTo(0,0);
         }
 
-        // -- CREW MGMT --
+        // -- CREW MGMT & FORM NUMBER --
+        async function saveFormNumber() {
+            const val = document.getElementById('form-number-input').value.trim();
+            crewMaster['__FORM_NUMBER__'] = val;
+            showToast("SAVING FORM NUMBER...");
+            const success = await apiPost('syncCrews', { crews: crewMaster });
+            if(success) showToast("FORM NUMBER SAVED");
+            else showToast("SAVE FAILED", "error");
+        }
+
         function renderCrewMgmtList() {
             const c = document.getElementById('crew-list-container');
             if(!c) return;
             c.innerHTML = '';
             Object.entries(crewMaster).forEach(([n, url]) => {
+                // Jangan tampilkan nomor form di list kru
+                if (n === '__FORM_NUMBER__') return;
+                
                 const card = document.createElement('div');
                 card.className = "glass-card rounded-2xl p-4 flex items-center justify-between group";
                 card.innerHTML = `<div class="flex items-center gap-4"><div class="w-12 h-10 bg-white rounded border border-slate-100 p-1"><img src="${url}" class="h-full w-full object-contain"></div><div><p class="font-black text-sm uppercase">${n}</p><p class="text-[8px] text-slate-400 truncate max-w-[150px]">${url}</p></div></div><div class="flex gap-2"><button onclick="editCrew('${n}','${url}')" class="text-blue-600 p-2 hover:bg-blue-50 rounded-lg">✎</button><button onclick="deleteCrew('${n}')" class="text-red-500 p-2 hover:bg-red-50 rounded-lg">✕</button></div>`;
@@ -451,7 +502,10 @@
             if(!d || !dl) return;
             const inputs = document.querySelectorAll('.crew-name-input');
             const manual = [...new Set(Array.from(inputs).map(i => i.value).filter(v => v.trim() !== ""))];
-            const all = [...new Set([...Object.keys(crewMaster), ...manual])];
+            // Filter key khusus agar tidak muncul di select option
+            const filteredCrewKeys = Object.keys(crewMaster).filter(k => k !== '__FORM_NUMBER__');
+            const all = [...new Set([...filteredCrewKeys, ...manual])];
+            
             const curr = d.value;
             d.innerHTML = '<option value="">-- SELECT NAME --</option>';
             dl.innerHTML = '';
@@ -586,6 +640,9 @@
             document.getElementById('pr-reg').innerText = r.ac_reg; 
             document.getElementById('pr-note').innerText = r.note || '-'; 
             document.getElementById('pr-sign-name').innerText = r.prepared_by; 
+            
+            // Tampilkan Nomor Form di Footer
+            document.getElementById('pr-form-number').innerText = crewMaster['__FORM_NUMBER__'] || '';
             
             // Otomatis mengambil tanda tangan dari master data berdasarkan nama Prepared By
             const pI = document.getElementById('pr-sign-img'); 
