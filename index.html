@@ -309,17 +309,24 @@
             if(!s) return '';
             const d = new Date(s);
             if(isNaN(d.getTime())) return s;
-            return d.toISOString().split('T')[0];
+            
+            // Perbaikan konversi ke YYYY-MM-DD menggunakan Local Time
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
         };
 
         const formatTimeDisplay = (s) => {
             if(!s) return '';
             if(typeof s === 'string' && s.includes('T')) {
-                try {
-                    const timePart = s.split('T')[1].split('.')[0];
-                    const segments = timePart.split(':');
-                    return `${segments[0]}:${segments[1]}`;
-                } catch(e) { return s; }
+                // Konversi aman untuk string ISO UTC kembali ke Local Time
+                const d = new Date(s);
+                if(!isNaN(d.getTime())) {
+                    const hh = String(d.getHours()).padStart(2, '0');
+                    const mm = String(d.getMinutes()).padStart(2, '0');
+                    return `${hh}:${mm}`;
+                }
             }
             return s;
         };
@@ -607,7 +614,7 @@
                         <td align="center" class="col-shrink">${c.total}</td>
                         <td align="center" class="col-shrink">${c.bp}</td>
                         <td align="center" class="col-shrink">${c.alcohol}</td>
-                        <td align="center" class="col-shrink">NIL</td>`; 
+                        <td align="center" class="col-shrink">${c.health}</td>`; 
                     b.appendChild(tr); 
                 }); 
                 for(let i=0; i<(7 - r.crew.length); i++) { 
