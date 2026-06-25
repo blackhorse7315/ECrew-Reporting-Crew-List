@@ -21,97 +21,120 @@
         .btn-unfit-active { background-color: #ef4444; color: white; border-color: #ef4444; }
         
         @media print {
-            @page { size: A4 landscape; margin: 0.3cm; }
-            body { background: white !important; font-family: 'Calibri', sans-serif !important; margin: 0; padding: 0; }
+            @page { size: A4 landscape; margin: 10mm 15mm; }
+            body { background: white !important; font-family: 'Segoe UI', 'Calibri', 'Helvetica Neue', sans-serif !important; margin: 0; padding: 0; color: #0f172a; }
             #view-dashboard, #view-form, #view-crew-mgmt, nav, #toast, #modal-detail, #sync-loader { display: none !important; }
             
             #print-area { 
                 display: block !important; 
                 width: 100%; 
-                color: black; 
                 margin: 0;
                 padding: 0;
             }
             
-            .header-logo { 
-                text-align: center; 
-                margin-top: -8px; 
-                margin-bottom: 4px; 
+            /* Modern Header: Logo Left, Info Box Right */
+            .print-header-container {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 12px;
+                gap: 20px;
             }
-            .header-logo img { height: 70px; width: auto; display: inline-block; }
+            .header-logo { flex: 0 0 auto; }
+            .header-logo img { height: 45px; width: auto; display: block; object-fit: contain; }
 
-            .flight-info-table { width: auto !important; margin-bottom: 2px; margin-left: 0; }
-            .flight-info-table td { padding: 0px 4px !important; }
-            .flight-info-table td:first-child { font-weight: bold; width: 140px; }
+            /* Professional Info Bar Styling */
+            .flight-info-grid {
+                display: flex;
+                flex: 1;
+                border: 1px solid #cbd5e1;
+                border-radius: 8px;
+                overflow: hidden;
+                background-color: #f8fafc !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .flight-info-item { 
+                flex: 1; 
+                padding: 8px 12px; 
+                border-right: 1px solid #cbd5e1; 
+                display: flex; 
+                flex-direction: column; 
+                justify-content: center; 
+            }
+            .flight-info-item:last-child { border-right: none; }
+            .flight-info-label { font-size: 6.5pt; text-transform: uppercase; color: #64748b; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 2px; }
+            .flight-info-value { font-size: 10pt; font-weight: 900; color: #0f172a; }
             
-            /* Table layout auto agar kolom bisa menyesuaikan konten */
-            table { width: 100%; border-collapse: collapse; table-layout: auto !important; margin-top: 2px; }
+            /* Modern Table */
+            table { width: 100%; border-collapse: collapse; table-layout: auto !important; margin-bottom: 12px; }
             th, td { 
-                border: 1px solid black; 
-                padding: 3px 5px; 
-                font-size: 11pt !important; 
+                border: 1px solid #cbd5e1; 
+                padding: 6px 8px; 
+                font-size: 9pt !important; 
                 text-align: center; 
                 overflow: hidden;
+                height: 28px;
             }
             
-            /* Judul Utama Kuning */
+            /* Dark Slate Main Title */
             .print-main-title {
-                background-color: #ffff00 !important;
-                font-weight: bold;
+                background-color: #1e293b !important;
+                color: #ffffff !important;
+                font-weight: 800;
                 text-transform: uppercase;
-                padding: 5px !important;
+                letter-spacing: 3px;
+                padding: 8px !important;
                 font-size: 11pt !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
+                border-color: #1e293b !important;
             }
 
-            /* Header Abu-abu Muda */
+            /* Light Slate Headers */
             .print-header-gray {
-                background-color: #d1d5db !important; 
-                font-weight: bold;
+                background-color: #f1f5f9 !important; 
+                color: #334155 !important;
+                font-weight: 800;
+                font-size: 7.5pt !important;
+                text-transform: uppercase;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
+            .print-header-gray th { border: 1px solid #cbd5e1; }
             
-            /* Kolom Nama Kru: Nowrap & Melebar Otomatis */
-            .col-crew-name { 
-                text-align: left !important; 
-                white-space: nowrap !important;
-                width: auto !important;
-            }
-
-            /* Kolom lainnya menyusut mengikuti konten judulnya */
-            .col-shrink {
-                width: 1% !important;
-                white-space: nowrap !important;
-            }
+            .col-crew-name { text-align: left !important; white-space: nowrap !important; width: auto !important; font-weight: bold; color: #0f172a; }
+            th.col-crew-name { text-align: center !important; }
+            .col-shrink { width: 1% !important; white-space: nowrap !important; }
             
-            .no-border td { border: none !important; padding: 1px 0; text-align: left; font-size: 11pt !important; }
-            
-            .note-container { 
-                margin-top: 8px; 
+            /* Modern Notes & Signatures */
+            .note-signature-container { 
                 display: flex;
                 justify-content: space-between;
-                align-items: flex-start;
+                align-items: stretch;
+                gap: 15px;
+                page-break-inside: avoid;
             }
             .note-box { 
-                width: 350px; 
-                font-size: 11pt;
+                flex: 1;
+                background-color: #f8fafc !important;
+                border: 1px solid #e2e8f0;
+                border-radius: 8px;
+                padding: 10px 12px;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
             }
-            #pr-note { 
-                min-height: 35px; 
-                border: 1px solid #000; 
-                padding: 4px; 
-                margin-top: 2px;
-                font-style: italic;
-            }
-            .signature-area { text-align: center; width: 250px; font-size: 11pt; }
-            /* Memperbesar area tanda tangan di PDF */
-            .signature-img-box { height: 80px; display: flex; align-items: center; justify-content: center; margin: 3px 0; }
+            .note-box-title { font-size: 7.5pt; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px; }
+            #pr-note { font-size: 9.5pt; font-style: italic; color: #334155; min-height: 35px; }
+            
+            .signature-area { width: 220px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; align-items: center; }
+            .signature-title { font-size: 7.5pt; color: #64748b; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+            .signature-img-box { height: 60px; display: flex; align-items: center; justify-content: center; margin: 4px 0; width: 100%; }
             .signature-img-box img { max-height: 100%; max-width: 100%; object-fit: contain; }
+            #pr-sign-name { font-weight: 800; font-size: 10pt; text-decoration: underline; margin-top: auto; color: #0f172a; }
             
             /* Footer Nomor Form */
-            .pr-footer-number { margin-top: 5px; font-size: 8pt; font-weight: bold; text-align: left; color: #555; }
+            .pr-footer-number { margin-top: 10px; font-size: 7pt; font-weight: 800; text-align: right; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 4px; letter-spacing: 1px; }
         }
 
         #print-area { display: none; }
@@ -142,7 +165,7 @@
                         <img src="https://lh3.googleusercontent.com/d/1WNcGjsZ9_Fp54xzOl01EYRqM6-wY5Zh7" alt="Logo" class="w-full h-full object-contain" />
                     </div>
                     <div>
-                        <span class="text-xl font-bold text-slate-900 block leading-tight tracking-tight uppercase">CrewReport</span>
+                        <span class="text-xl font-bold text-slate-900 block leading-tight tracking-tight uppercase">ECrew-Crew Report</span>
                         <span class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Flight Ops Division</span>
                     </div>
                 </div>
@@ -258,17 +281,18 @@
 
     <!-- AREA CETAK -->
     <div id="print-area">
-        <div class="header-logo">
-            <img src="https://lh3.googleusercontent.com/d/1WNcGjsZ9_Fp54xzOl01EYRqM6-wY5Zh7" alt="Logo" />
+        <div class="print-header-container">
+            <div class="header-logo">
+                <img src="https://lh3.googleusercontent.com/d/1WNcGjsZ9_Fp54xzOl01EYRqM6-wY5Zh7" alt="Logo" />
+            </div>
+            <div class="flight-info-grid">
+                <div class="flight-info-item"><span class="flight-info-label">Route</span><span class="flight-info-value" id="pr-route"></span></div>
+                <div class="flight-info-item"><span class="flight-info-label">Date</span><span class="flight-info-value" id="pr-date"></span></div>
+                <div class="flight-info-item"><span class="flight-info-label">ETD (UTC)</span><span class="flight-info-value" id="pr-etd"></span></div>
+                <div class="flight-info-item"><span class="flight-info-label">Aircraft Type</span><span class="flight-info-value" id="pr-type"></span></div>
+                <div class="flight-info-item"><span class="flight-info-label">Aircraft Reg</span><span class="flight-info-value" id="pr-reg"></span></div>
+            </div>
         </div>
-
-        <table class="no-border flight-info-table">
-            <tr><td>ROUTE</td><td>: <span id="pr-route"></span></td></tr>
-            <tr><td>DATE</td><td>: <span id="pr-date"></span></td></tr>
-            <tr><td>ETD</td><td>: <span id="pr-etd"></span> UTC</td></tr>
-            <tr><td>AIRCRAFT TYPE</td><td>: <span id="pr-type"></span></td></tr>
-            <tr><td>AIRCRAFT REG</td><td>: <span id="pr-reg"></span></td></tr>
-        </table>
 
         <table>
             <thead>
@@ -300,21 +324,22 @@
             <tbody id="pr-table-body"></tbody>
         </table>
 
-        <div class="note-container">
+        <div class="note-signature-container">
             <div class="note-box">
-                <strong>NOTE:</strong>
+                <div class="note-box-title">Remarks / Notes</div>
                 <div id="pr-note"></div>
-                <!-- Pindah Posisi Footer Nomor Form -->
-                <div id="pr-form-number" class="pr-footer-number"></div>
             </div>
             <div class="signature-area">
-                <p style="margin-bottom: 2px;">PREPARED BY FLOPS<br>OR PILOT ON DUTY</p>
+                <div class="signature-title">Prepared By (Pilot on Duty / FLOPS)</div>
                 <div class="signature-img-box">
                     <img id="pr-sign-img" src="" alt="TTD">
                 </div>
-                <p id="pr-sign-name" style="font-weight: bold; text-decoration: underline; margin-top: 2px;"></p>
+                <div id="pr-sign-name"></div>
             </div>
         </div>
+        
+        <!-- Foother Nomor Form Kanan Bawah -->
+        <div id="pr-form-number" class="pr-footer-number"></div>
     </div>
 
     <!-- Message Toasts -->
@@ -672,13 +697,15 @@
                         <td align="center" class="col-shrink">${c.total}</td>
                         <td align="center" class="col-shrink">${c.bp}</td>
                         <td align="center" class="col-shrink">${c.alcohol}</td>
-                        <td align="center" class="col-shrink">${c.health}</td>`; // REMARKS otomatis diisi FIT/UNFIT
+                        <td align="center" class="col-shrink">${c.health}</td>`;
                     b.appendChild(tr); 
                 }); 
-                for(let i=0; i<(7 - r.crew.length); i++) { 
+                
+                // Pastikan selalu ada 6 baris agar rapi dan pas 1 halaman
+                const maxRows = 6;
+                for(let i = r.crew.length; i < maxRows; i++) { 
                     let tr = document.createElement('tr'); 
-                    tr.style.height='22px'; 
-                    tr.innerHTML = `<td align="center">${r.crew.length+i+1}.</td><td class="col-crew-name"></td> ${'<td class="col-shrink"></td>'.repeat(10)}`; 
+                    tr.innerHTML = `<td align="center">${i+1}.</td><td class="col-crew-name"></td> ${'<td class="col-shrink"></td>'.repeat(10)}`; 
                     b.appendChild(tr); 
                 }
             }
