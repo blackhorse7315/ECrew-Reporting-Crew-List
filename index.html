@@ -131,9 +131,9 @@
             .note-signature-container { 
                 display: flex;
                 justify-content: space-between;
-                align-items: flex-end; /* Memastikan kolom tanda tangan sejajar di bagian bawah (rata bawah) */
+                align-items: flex-start; /* Mengubah posisi sejajar di bagian atas agar teks judul sejajar */
                 gap: 15px;
-                margin-top: auto; /* Mendorong seluruh area ini ke dasar halaman */
+                margin-top: 12px; /* Menarik kotak tepat ke bawah tabel (baris 6) */
                 page-break-inside: avoid;
             }
             .note-box { 
@@ -146,25 +146,25 @@
                 print-color-adjust: exact;
                 display: flex;
                 flex-direction: column;
-                min-height: 85px; /* Tinggi standar minimal */
-                height: max-content; /* Biarkan tinggi menyesuaikan otomatis jika kalimatnya banyak */
+                min-height: 85px; 
+                height: max-content; 
             }
-            .note-box-title { font-size: 7.5pt; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px; }
+            .note-box-title { font-size: 7.5pt; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px; margin-top: 2px; }
             #pr-note { 
                 font-size: 9pt; 
                 font-style: italic; 
                 color: #334155; 
-                white-space: pre-wrap; /* Mempertahankan spasi dan enter (baris baru) dari input */
+                white-space: pre-wrap; 
             }
             
-            .signature-area { width: 220px; text-align: center; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; }
+            .signature-area { width: 220px; text-align: center; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; padding-top: 2px; }
             .signature-title { font-size: 7.5pt; color: #64748b; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
             .signature-img-box { height: 50px; display: flex; align-items: center; justify-content: center; margin: 2px 0; width: 100%; }
             .signature-img-box img { max-height: 100%; max-width: 100%; object-fit: contain; }
-            #pr-sign-name { font-weight: 800; font-size: 9.5pt; text-decoration: underline; color: #0f172a; }
+            #pr-sign-name { font-weight: 800; font-size: 9.5pt; text-decoration: underline; color: #0f172a; margin-top: auto; }
             
             /* Footer Nomor Form */
-            .pr-footer-number { margin-top: 5px; font-size: 7pt; font-weight: 800; text-align: right; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 4px; letter-spacing: 1px; flex-shrink: 0; }
+            .pr-footer-number { margin-top: auto; font-size: 7pt; font-weight: 800; text-align: right; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 4px; letter-spacing: 1px; flex-shrink: 0; }
         }
 
         #print-area { display: none; }
