@@ -21,15 +21,34 @@
         .btn-unfit-active { background-color: #ef4444; color: white; border-color: #ef4444; }
         
         @media print {
-            @page { size: A4 landscape; margin: 10mm 15mm; }
-            body { background: white !important; font-family: 'Segoe UI', 'Calibri', 'Helvetica Neue', sans-serif !important; margin: 0; padding: 0; color: #0f172a; }
+            @page { size: A4 landscape; margin: 5mm 10mm; } /* Margin diperkecil agar aman di iPhone */
+            
+            html, body { 
+                background: white !important; 
+                font-family: 'Segoe UI', 'Calibri', 'Helvetica Neue', sans-serif !important; 
+                margin: 0 !important; 
+                padding: 0 !important; 
+                color: #0f172a; 
+                width: 100%;
+                height: 100%;
+                overflow: hidden !important; /* Mencegah halaman kedua yang kosong */
+                -webkit-text-size-adjust: 100%; /* Mencegah iOS memperbesar teks otomatis */
+            }
+            
             #view-dashboard, #view-form, #view-crew-mgmt, nav, #toast, #modal-detail, #sync-loader { display: none !important; }
             
             #print-area { 
-                display: block !important; 
+                display: flex !important;
+                flex-direction: column;
                 width: 100%; 
+                height: 98vh; /* Mengunci total tinggi kurang dari 1 halaman penuh */
+                max-height: 98vh;
                 margin: 0;
                 padding: 0;
+                box-sizing: border-box;
+                page-break-inside: avoid;
+                page-break-after: avoid;
+                overflow: hidden;
             }
             
             /* Modern Header: Logo Left, Info Box Right */
@@ -37,11 +56,12 @@
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                margin-bottom: 12px;
-                gap: 20px;
+                margin-bottom: 10px;
+                gap: 15px;
+                flex-shrink: 0;
             }
             .header-logo { flex: 0 0 auto; }
-            .header-logo img { height: 45px; width: auto; display: block; object-fit: contain; }
+            .header-logo img { height: 40px; width: auto; display: block; object-fit: contain; }
 
             /* Professional Info Bar Styling */
             .flight-info-grid {
@@ -56,7 +76,7 @@
             }
             .flight-info-item { 
                 flex: 1; 
-                padding: 8px 12px; 
+                padding: 6px 10px; 
                 border-right: 1px solid #cbd5e1; 
                 display: flex; 
                 flex-direction: column; 
@@ -64,17 +84,17 @@
             }
             .flight-info-item:last-child { border-right: none; }
             .flight-info-label { font-size: 6.5pt; text-transform: uppercase; color: #64748b; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 2px; }
-            .flight-info-value { font-size: 10pt; font-weight: 900; color: #0f172a; }
+            .flight-info-value { font-size: 9.5pt; font-weight: 900; color: #0f172a; }
             
             /* Modern Table */
-            table { width: 100%; border-collapse: collapse; table-layout: auto !important; margin-bottom: 12px; }
+            table { width: 100%; border-collapse: collapse; table-layout: auto !important; margin-bottom: 8px; flex-shrink: 0; }
             th, td { 
                 border: 1px solid #cbd5e1; 
-                padding: 6px 8px; 
-                font-size: 9pt !important; 
+                padding: 4px 6px; /* Padding dikurangi agar tidak memakan tinggi vertikal berlebih di iOS */
+                font-size: 8.5pt !important; 
                 text-align: center; 
                 overflow: hidden;
-                height: 28px;
+                height: 24px; /* Tinggi baris dikurangi agar pas */
             }
             
             /* Dark Slate Main Title */
@@ -84,8 +104,8 @@
                 font-weight: 800;
                 text-transform: uppercase;
                 letter-spacing: 3px;
-                padding: 8px !important;
-                font-size: 11pt !important;
+                padding: 6px !important;
+                font-size: 10pt !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
                 border-color: #1e293b !important;
@@ -113,6 +133,7 @@
                 justify-content: space-between;
                 align-items: stretch;
                 gap: 15px;
+                flex: 1; /* Biarkan memenuhi sisa ruang bawah */
                 page-break-inside: avoid;
             }
             .note-box { 
@@ -120,21 +141,23 @@
                 background-color: #f8fafc !important;
                 border: 1px solid #e2e8f0;
                 border-radius: 8px;
-                padding: 10px 12px;
+                padding: 8px 12px;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
+                display: flex;
+                flex-direction: column;
             }
             .note-box-title { font-size: 7.5pt; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px; }
-            #pr-note { font-size: 9.5pt; font-style: italic; color: #334155; min-height: 35px; }
+            #pr-note { font-size: 9pt; font-style: italic; color: #334155; flex: 1; }
             
             .signature-area { width: 220px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; align-items: center; }
             .signature-title { font-size: 7.5pt; color: #64748b; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
-            .signature-img-box { height: 60px; display: flex; align-items: center; justify-content: center; margin: 4px 0; width: 100%; }
+            .signature-img-box { height: 50px; display: flex; align-items: center; justify-content: center; margin: 2px 0; width: 100%; }
             .signature-img-box img { max-height: 100%; max-width: 100%; object-fit: contain; }
-            #pr-sign-name { font-weight: 800; font-size: 10pt; text-decoration: underline; margin-top: auto; color: #0f172a; }
+            #pr-sign-name { font-weight: 800; font-size: 9.5pt; text-decoration: underline; color: #0f172a; margin-top: auto; }
             
             /* Footer Nomor Form */
-            .pr-footer-number { margin-top: 10px; font-size: 7pt; font-weight: 800; text-align: right; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 4px; letter-spacing: 1px; }
+            .pr-footer-number { margin-top: 5px; font-size: 7pt; font-weight: 800; text-align: right; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 4px; letter-spacing: 1px; flex-shrink: 0; }
         }
 
         #print-area { display: none; }
